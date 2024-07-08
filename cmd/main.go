@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"test_chi"
+
+	"test_chi/pkg/infrastructure/chi_router"
 )
 
 func main() {
 	fmt.Println("Test HTTP server")
 
-	test_chi.Start()
+	chi_router.Start()
 }
