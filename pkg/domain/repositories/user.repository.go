@@ -14,9 +14,9 @@ var (
 type UserRepository interface {
 	Login(email, password string) (entities.User, error)
 	Create(user *entities.User) error
-	GetAll(page, limit, sorts string) (users []entities.User, total int64, err error)
-	GetByID(id string) (entities.User, error)
-	GetByEmail(email string) (entities.User, error)
-	Delete(id string) error
-	Update(user *entities.User) error
+	// GetAll(page, limit, sorts string) (users []entities.User, total int64, err error)
+	// GetByID(id string) (entities.User, error)
+	// GetByEmail(email string) (entities.User, error)
+	// Delete(id string) error
+	// Update(user *entities.User) error
 }

@@ -1,4 +1,4 @@
-# chi-boilerplate
+# Chi Boilerplate
 
 A simple boilerplate for [Chi](https://go-chi.io)
 
@@ -22,17 +22,17 @@ A simple boilerplate for [Chi](https://go-chi.io)
 
 ## Commands list
 
-| Command               | Description                 |
-| --------------------- | --------------------------- |
-| `<binary> run`        | Start server                |
-| `<binary> logs -s`    | Server logs reader          |
-| `<binary> logs -d`    | Database (GORM) logs reader |
-| `<binary> register`   | Create a new user           |
+| Command             | Description                 |
+|---------------------|-----------------------------|
+| `<binary> run`      | Start server                |
+| `<binary> logs -s`  | Server logs reader          |
+| `<binary> logs -d`  | Database (GORM) logs reader |
+| `<binary> register` | Create a new user           |
 
 ## Makefile commands
 
 | Makefile command    | Go command                                    | Description                                 |
-| ------------------- | --------------------------------------------- | ------------------------------------------- |
+|---------------------|-----------------------------------------------|---------------------------------------------|
 | `make update`       | `go get -u && go mod tidy`                    | Update Go dependencies                      |
 | `make serve`        | `go run cmd/main.go`                          | Start the Web server                        |
 | `make serve-race`   | `go run --race cmd/main.go`                   | Start the Web server with data races option |
@@ -76,12 +76,31 @@ WantedBy=multi-user.target
 ```
 
 | Commande                                   | Description        |
-| ------------------------------------------ | ------------------ |
+|--------------------------------------------|--------------------|
 | `systemctl start <service name>.service`   | To launch          |
 | `systemctl enable <service name>.service`  | To enable on boot  |
 | `systemctl disable <service name>.service` | To disable on boot |
 | `systemctl status <service name>.service`  | To show status     |
 | `systemctl stop <service name>.service`    | To stop            |
+
+## Database migrations
+
+Install  [golang-migrate](https://github.com/golang-migrate/migrate)
+
+### Create a migration
+```bash
+migrate create -ext sql -dir migrations <migration_name>
+```
+
+### Run migrations
+```bash
+migrate -source file://migrations -database <connection_string> up
+```
+
+### Revert migrations
+```bash
+migrate -source file://migrations -database <connection_string> down
+```
 
 ## Benchmark
 
@@ -93,13 +112,13 @@ $ drill --benchmark drill.yml --stats --quiet
 
 ## Go documentation
 
-Installer `godoc` (pas dans le répertoire du projet) :
+Install `godoc` (pas dans le répertoire du projet):
 
 ```bash
 go get -u golang.org/x/tools/...
 ```
 
-Puis lancer :
+Then run:
 
 ```bash
 godoc -http=localhost:6060 -play=true -index
@@ -179,6 +198,7 @@ rm keys/private.ec.key
 
 ## TODO
 
+- [ ] Add unit tests for domain 
 - [ ] Add scope to JWT
 - [ ] Add Docker support
   - [ ] Try OpenTelemetry [middleware](https://github.com/gofiber/contrib/tree/main/otelfiber)

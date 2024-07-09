@@ -2,6 +2,8 @@ package entities
 
 import (
 	"chi_boilerplate/utils"
+	"crypto/sha512"
+	"encoding/hex"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -12,7 +14,7 @@ import (
 )
 
 // UserID is a type for user ID
-type UserID uuid.UUID
+type UserID = uuid.UUID
 
 // User is a struct that represents a user
 type User struct {
@@ -24,6 +26,12 @@ type User struct {
 	CreatedAt time.Time   `json:"created_at" xml:"created_at" form:"created_at"`
 	UpdatedAt time.Time   `json:"updated_at" xml:"updated_at" form:"updated_at"`
 	DeletedAt *time.Time  `json:"-" xml:"-" form:"deleted_at"`
+}
+
+// HashUserPassword hashes a password
+func HashUserPassword(password string) string {
+	passwordBytes := sha512.Sum512([]byte(password))
+	return hex.EncodeToString(passwordBytes[:])
 }
 
 // GenerateJWT returns a token

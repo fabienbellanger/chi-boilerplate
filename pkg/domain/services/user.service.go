@@ -8,7 +8,9 @@ import (
 	values_objects "chi_boilerplate/pkg/domain/value_objects"
 	"chi_boilerplate/utils"
 	"errors"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/spf13/viper"
 )
 
@@ -61,7 +63,7 @@ func (us userService) Login(req requests.UserLogin) (responses.UserLogin, *utils
 	return responses.UserLogin{
 		User:      user,
 		Token:     token,
-		ExpiresAt: expiresAt.Format("2006-01-02T15:04:05.000Z"),
+		ExpiresAt: expiresAt.Format(time.RFC3339),
 	}, nil
 }
 
@@ -82,10 +84,13 @@ func (us userService) Create(req requests.UserCreation) (entities.User, *utils.H
 	}
 
 	user := entities.User{
+		ID:        uuid.New(),
 		Lastname:  req.Lastname,
 		Firstname: req.Firstname,
 		Password:  password,
 		Email:     email,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
 	if err := us.userRepository.Create(&user); err != nil {
