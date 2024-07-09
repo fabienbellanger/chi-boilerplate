@@ -2,15 +2,32 @@ package chi_router
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
-func Start() {
+// ChiServer is a struct that represents a Chi server
+type ChiServer struct {
+	Addr string
+	Port string
+}
+
+// NewChiServer creates a new ChiServer
+func NewChiServer(addr, port string) ChiServer {
+	return ChiServer{
+		Addr: addr,
+		Port: port,
+	}
+}
+
+// Start the HTTP server
+func (s ChiServer) Start() error {
 	r := chi.NewRouter()
 
+	// Middlewares
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
@@ -26,7 +43,7 @@ func Start() {
 		w.Write([]byte("Hello " + name + " with " + query + "!"))
 	})
 
-	// curl -H "Content-Type: application/json" -d '{"name":"xyz"}' --request POST http://localhost:3000/hello
+	// curl -H "Content-Type: application/json" -d '{"name":"xyz"}' --request POST "http://localhost:3000/hello"
 	r.Post("/hello", func(w http.ResponseWriter, r *http.Request) {
 		type Person struct {
 			Name string
@@ -43,5 +60,6 @@ func Start() {
 		w.Write([]byte("Hello " + p.Name + "!"))
 	})
 
-	http.ListenAndServe("localhost:3000", r)
+	fmt.Printf("Server started on %s:%s...\n", s.Addr, s.Port)
+	return http.ListenAndServe(fmt.Sprintf("%s:%s", s.Addr, s.Port), r)
 }
