@@ -3,6 +3,8 @@ package sqlx_mysql
 import (
 	"chi_boilerplate/pkg/adapters/db"
 	"chi_boilerplate/pkg/domain/entities"
+	"chi_boilerplate/pkg/domain/requests"
+	"chi_boilerplate/pkg/domain/responses"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -19,11 +21,17 @@ func NewUserMysqlRepository(db *db.MySQL) *UserMysqlRepository {
 }
 
 // Login returns a user if a user is found
-func (u UserMysqlRepository) Login(email, password string) (entities.User, error) {
-	hashedPassword := entities.HashUserPassword(password)
+func (u UserMysqlRepository) Login(req requests.UserLogin) (responses.UserLoginRepository, error) {
+	hashedPassword := entities.HashUserPassword(req.Password)
 
-	var user entities.User
-	row := u.db.QueryRowx("SELECT * FROM users WHERE email = ? AND password = ? LIMIT 1", email, hashedPassword)
+	var user responses.UserLoginRepository
+	row := u.db.QueryRowx(`
+		SELECT id, email, lastname, firstname, created_at 
+		FROM users 
+		WHERE email = ? AND password = ? LIMIT 1`,
+		req.Email,
+		hashedPassword,
+	)
 	if err := row.StructScan(&user); err != nil {
 		return user, err
 	}
@@ -32,17 +40,13 @@ func (u UserMysqlRepository) Login(email, password string) (entities.User, error
 }
 
 // Create creates a new user
-func (u UserMysqlRepository) Create(user *entities.User) error {
-	hashedPassword := entities.HashUserPassword(user.Password.Value)
-
-	_, err := u.db.Exec(
-		`
-			INSERT INTO users (id, email, password, lastname, firstname, created_at, updated_at) 
-			VALUES (?, ?, ?, ?, ?, ?, ?)
-		`,
+func (u UserMysqlRepository) Create(user requests.UserCreationRepository) error {
+	_, err := u.db.Exec(`
+		INSERT INTO users (id, email, password, lastname, firstname, created_at, updated_at) 
+		VALUES (?, ?, ?, ?, ?, ?, ?)`,
 		user.ID,
-		user.Email.Value,
-		hashedPassword,
+		user.Email,
+		user.Password,
 		user.Lastname,
 		user.Firstname,
 		user.CreatedAt,

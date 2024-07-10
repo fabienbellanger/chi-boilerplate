@@ -27,3 +27,14 @@ type UserUpdate struct {
 	Lastname  string `json:"lastname" xml:"lastname" form:"lastname" validate:"required"`
 	Firstname string `json:"firstname" xml:"firstname" form:"firstname" validate:"required"`
 }
+
+// UserCreation request to create a user
+type UserCreationRepository struct {
+	ID        string
+	Email     string
+	Password  string
+	Lastname  string
+	Firstname string
+	CreatedAt string
+	UpdatedAt string
+}

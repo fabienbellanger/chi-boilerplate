@@ -1,7 +1,6 @@
 package usecases
 
 import (
-	"chi_boilerplate/pkg/domain/entities"
 	"chi_boilerplate/pkg/domain/requests"
 	"chi_boilerplate/pkg/domain/responses"
 	"chi_boilerplate/pkg/domain/services"
@@ -11,7 +10,7 @@ import (
 // User is an interface for user use cases
 type User interface {
 	Login(req requests.UserLogin) (responses.UserLogin, *utils.HTTPError)
-	Create(req requests.UserCreation) (entities.User, *utils.HTTPError)
+	Create(req requests.UserCreation) (responses.UserCreation, *utils.HTTPError)
 	// GetAll(req requests.Pagination) (responses.UsersListPaginated, *utils.HTTPError)
 	// GetByID(id requests.UserByID) (entities.User, *utils.HTTPError)
 	// Delete(id requests.UserByID) *utils.HTTPError
@@ -33,7 +32,7 @@ func (uc *userUseCase) Login(req requests.UserLogin) (responses.UserLogin, *util
 }
 
 // Create user
-func (uc *userUseCase) Create(req requests.UserCreation) (entities.User, *utils.HTTPError) {
+func (uc *userUseCase) Create(req requests.UserCreation) (responses.UserCreation, *utils.HTTPError) {
 	return uc.userService.Create(req)
 }
 

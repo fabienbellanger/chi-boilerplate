@@ -1,7 +1,8 @@
 package repositories
 
 import (
-	"chi_boilerplate/pkg/domain/entities"
+	"chi_boilerplate/pkg/domain/requests"
+	"chi_boilerplate/pkg/domain/responses"
 	"errors"
 )
 
@@ -12,8 +13,8 @@ var (
 
 // UserRepository is the interface that wraps the basic user repository methods.
 type UserRepository interface {
-	Login(email, password string) (entities.User, error)
-	Create(user *entities.User) error
+	Login(req requests.UserLogin) (responses.UserLoginRepository, error)
+	Create(req requests.UserCreationRepository) error
 	// GetAll(page, limit, sorts string) (users []entities.User, total int64, err error)
 	// GetByID(id string) (entities.User, error)
 	// GetByEmail(email string) (entities.User, error)
