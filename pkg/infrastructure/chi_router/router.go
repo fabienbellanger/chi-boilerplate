@@ -1,6 +1,7 @@
 package chi_router
 
 import (
+	"chi_boilerplate/pkg/adapters/db"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -13,13 +14,15 @@ import (
 type ChiServer struct {
 	Addr string
 	Port string
+	DB   *db.MySQL
 }
 
 // NewChiServer creates a new ChiServer
-func NewChiServer(addr, port string) ChiServer {
+func NewChiServer(addr, port string, db *db.MySQL) ChiServer {
 	return ChiServer{
 		Addr: addr,
 		Port: port,
+		DB:   db,
 	}
 }
 

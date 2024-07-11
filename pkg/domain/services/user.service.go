@@ -39,7 +39,9 @@ func (us userService) Login(req requests.UserLogin) (responses.UserLogin, *utils
 		return responses.UserLogin{}, utils.NewHTTPError(utils.StatusBadRequest, "Invalid body", loginErrors, nil)
 	}
 
-	userRepo, err := us.userRepository.Login(requests.UserLogin{Email: req.Email, Password: req.Password})
+	hashedPassword := entities.HashUserPassword(req.Password)
+
+	userRepo, err := us.userRepository.Login(requests.UserLogin{Email: req.Email, Password: hashedPassword})
 	if err != nil {
 		var e *utils.HTTPError
 		if errors.Is(err, repositories.ErrUserNotFound) {

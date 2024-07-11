@@ -22,16 +22,17 @@ var serverCmd = &cobra.Command{
 }
 
 func startServer() {
-	// Configuration initialization
-	// ----------------------------
 	err := initConfig()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	// Start server
-	// ------------
-	server := chi_router.NewChiServer(viper.GetString("SERVER_ADDR"), viper.GetString("SERVER_PORT"))
+	db, err := initDatabase()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	server := chi_router.NewChiServer(viper.GetString("SERVER_ADDR"), viper.GetString("SERVER_PORT"), db)
 	err = server.Start()
 	if err != nil {
 		log.Fatalln(err)

@@ -2,7 +2,6 @@ package sqlx_mysql
 
 import (
 	"chi_boilerplate/pkg/adapters/db"
-	"chi_boilerplate/pkg/domain/entities"
 	"chi_boilerplate/pkg/domain/requests"
 	"chi_boilerplate/pkg/domain/responses"
 
@@ -22,15 +21,13 @@ func NewUserMysqlRepository(db *db.MySQL) *UserMysqlRepository {
 
 // Login returns a user if a user is found
 func (u UserMysqlRepository) Login(req requests.UserLogin) (responses.UserLoginRepository, error) {
-	hashedPassword := entities.HashUserPassword(req.Password)
-
 	var user responses.UserLoginRepository
 	row := u.db.QueryRowx(`
 		SELECT id, email, lastname, firstname, created_at 
 		FROM users 
 		WHERE email = ? AND password = ? LIMIT 1`,
 		req.Email,
-		hashedPassword,
+		req.Password,
 	)
 	if err := row.StructScan(&user); err != nil {
 		return user, err
