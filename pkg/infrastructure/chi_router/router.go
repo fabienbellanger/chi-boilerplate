@@ -2,7 +2,11 @@ package chi_router
 
 import (
 	"chi_boilerplate/pkg/adapters/db"
-	"encoding/json"
+	"chi_boilerplate/pkg/adapters/repositories/sqlx_mysql"
+	"chi_boilerplate/pkg/domain/services"
+	"chi_boilerplate/pkg/domain/usecases"
+	"chi_boilerplate/pkg/infrastructure/chi_router/handlers/api"
+	"chi_boilerplate/pkg/infrastructure/chi_router/handlers/web"
 	"fmt"
 	"net/http"
 
@@ -31,36 +35,28 @@ func (s ChiServer) Start() error {
 	r := chi.NewRouter()
 
 	// Middlewares
+	r.Use(middleware.RequestID)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello World!"))
-	})
+	// Web routes
+	r.Get("/health-check", web.HealthCheck)
+	r.Get("/panic", web.Panic)
+	r.Get("/hello/{name}", web.GetHello)
+	r.Post("/hello", web.PostHello)
 
-	// curl "http://localhost:3000/hello/fabien?q=test"
-	r.Get("/hello/{name}", func(w http.ResponseWriter, r *http.Request) {
-		name := chi.URLParam(r, "name")
-		query := r.URL.Query().Get("q")
+	// API routes
+	r.Route("/api/v1", func(v1 chi.Router) {
+		// User routes
+		v1.Route("/users", func(u chi.Router) {
+			userRepo := sqlx_mysql.NewUserMysqlRepository(s.DB)
+			userService := services.NewUser(userRepo)
+			userUseCase := usecases.NewUser(userService)
 
-		w.Write([]byte("Hello " + name + " with " + query + "!"))
-	})
-
-	// curl -H "Content-Type: application/json" -d '{"name":"xyz"}' --request POST "http://localhost:3000/hello"
-	r.Post("/hello", func(w http.ResponseWriter, r *http.Request) {
-		type Person struct {
-			Name string
-		}
-
-		var p Person
-		err := json.NewDecoder(r.Body).Decode(&p)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("Error decoding body"))
-			return
-		}
-
-		w.Write([]byte("Hello " + p.Name + "!"))
+			h := api.NewUser(u, userUseCase)
+			h.UserPublicRoutes()
+			h.UserProtectedRoutes()
+		})
 	})
 
 	fmt.Printf("Server started on %s:%s...\n", s.Addr, s.Port)

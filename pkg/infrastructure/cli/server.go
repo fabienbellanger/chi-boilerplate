@@ -33,8 +33,7 @@ func startServer() {
 	}
 
 	server := chi_router.NewChiServer(viper.GetString("SERVER_ADDR"), viper.GetString("SERVER_PORT"), db)
-	err = server.Start()
-	if err != nil {
+	if err = server.Start(); err != nil {
 		log.Fatalln(err)
 	}
 }

@@ -1,5 +1,11 @@
 package utils
 
+import (
+	"encoding/json"
+	"log"
+	"net/http"
+)
+
 // Error status codes
 const (
 	StatusBadRequest                   = 400
@@ -55,7 +61,6 @@ type HTTPError struct {
 
 // NewHTTPError returns a new HTTPError.
 func NewHTTPError(code int, message string, details interface{}, err error) *HTTPError {
-
 	return &HTTPError{
 		Code:    code,
 		Message: message,
@@ -66,4 +71,43 @@ func NewHTTPError(code int, message string, details interface{}, err error) *HTT
 
 func (e HTTPError) Error() string {
 	return e.Message
+}
+
+func (e HTTPError) SendError(w http.ResponseWriter) {
+	// TODO: Manage logging
+	log.Printf("Error: %v\n", e.Err)
+
+	res, err := json.Marshal(e)
+	if err != nil {
+		Err500(w, err, "error when encoding the response")
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(e.Code)
+	w.Write(res)
+}
+
+func Err(w http.ResponseWriter, status int, err error, msg string) {
+	e := NewHTTPError(status, msg, nil, err)
+	e.SendError(w)
+}
+
+func Err400(w http.ResponseWriter, err error, msg string) {
+	Err(w, StatusBadRequest, err, msg)
+}
+
+func Err500(w http.ResponseWriter, err error, msg string) {
+	Err(w, StatusInternalServerError, err, msg)
+}
+
+func JSON(w http.ResponseWriter, data interface{}) {
+	res, err := json.Marshal(data)
+	if err != nil {
+		Err500(w, err, "error when encoding the response")
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.Write(res)
 }
