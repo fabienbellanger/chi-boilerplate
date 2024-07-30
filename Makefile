@@ -79,7 +79,7 @@ serve-race:
 
 ## logs: Display server logs
 logs:
-	$(GO_RUN) $(MAIN_PATH) logs --server
+	$(GO_RUN) $(MAIN_PATH) logs
 
 build: format
 	$(GO_BUILD) -ldflags "-s -w" -o $(BINARY_NAME) -v $(MAIN_PATH)
