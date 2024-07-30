@@ -8,6 +8,7 @@ import (
 	"chi_boilerplate/pkg/infrastructure/chi_router/handlers/api"
 	"chi_boilerplate/pkg/infrastructure/chi_router/handlers/web"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -31,7 +32,7 @@ func NewChiServer(addr, port string, db *db.MySQL) ChiServer {
 }
 
 // Start the HTTP server
-func (s ChiServer) Start() error {
+func (s *ChiServer) Start() error {
 	r := chi.NewRouter()
 
 	// Middlewares
@@ -47,6 +48,8 @@ func (s ChiServer) Start() error {
 
 	// API routes
 	r.Route("/api/v1", func(v1 chi.Router) {
+		v1.Use(CustomMiddleware)
+
 		// User routes
 		v1.Route("/users", func(u chi.Router) {
 			userRepo := sqlx_mysql.NewUserMysqlRepository(s.DB)
@@ -61,4 +64,15 @@ func (s ChiServer) Start() error {
 
 	fmt.Printf("Server started on %s:%s...\n", s.Addr, s.Port)
 	return http.ListenAndServe(fmt.Sprintf("%s:%s", s.Addr, s.Port), r)
+}
+
+// TODO: For test, remove later
+func CustomMiddleware(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		log.Println("Before response...")
+		next.ServeHTTP(w, r.WithContext(ctx))
+		log.Println("After response...")
+	}
+	return http.HandlerFunc(fn)
 }

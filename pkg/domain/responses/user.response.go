@@ -9,31 +9,42 @@ import (
 // UserLogin login response
 type UserLogin struct {
 	ID        entities.UserID `json:"id" xml:"id"`
-	Email     vo.Email        `json:"email" xml:"email"`
+	Email     string          `json:"email" xml:"email"`
 	Lastname  string          `json:"lastname" xml:"lastname"`
 	Firstname string          `json:"firstname" xml:"firstname"`
-	CreatedAt time.Time       `json:"created_at" xml:"created_at"`
+	CreatedAt string          `json:"created_at" xml:"created_at"`
 	Token     string          `json:"token" xml:"token"`
-	ExpiresAt time.Time       `json:"expires_at" xml:"expires_at"`
+	ExpiresAt string          `json:"expires_at" xml:"expires_at"`
 }
 
 // UserLoginRepository repository login response
 type UserLoginRepository struct {
 	ID        entities.UserID
-	Email     vo.Email
+	Email     string
 	Lastname  string
 	Firstname string
-	CreatedAt time.Time
+	CreatedAt string
 }
 
 // ToUser converts UserLoginRepository to User
-func (ulr *UserLoginRepository) ToUser() entities.User {
+func (ulr *UserLoginRepository) ToUser() (entities.User, error) {
+	email, err := vo.NewEmail(ulr.Email)
+	if err != nil {
+		return entities.User{}, err
+	}
+
+	createdAt, err := time.Parse(time.RFC3339, ulr.CreatedAt)
+	if err != nil {
+		return entities.User{}, err
+	}
+
 	return entities.User{
 		ID:        ulr.ID,
-		Email:     ulr.Email,
+		Email:     email,
 		Lastname:  ulr.Lastname,
 		Firstname: ulr.Firstname,
-	}
+		CreatedAt: createdAt,
+	}, nil
 }
 
 // UserCreation login response

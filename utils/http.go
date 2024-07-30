@@ -69,17 +69,19 @@ func NewHTTPError(code int, message string, details interface{}, err error) *HTT
 	}
 }
 
-func (e HTTPError) Error() string {
+// Error returns the error message.
+func (e *HTTPError) Error() string {
 	return e.Message
 }
 
-func (e HTTPError) SendError(w http.ResponseWriter) {
+// SendError sends the error to the client.
+func (e *HTTPError) SendError(w http.ResponseWriter) {
 	// TODO: Manage logging
 	log.Printf("Error: %v\n", e.Err)
 
 	res, err := json.Marshal(e)
 	if err != nil {
-		Err500(w, err, "error when encoding the response")
+		Err500(w, err, "error when encoding the response", nil)
 		return
 	}
 
@@ -88,23 +90,23 @@ func (e HTTPError) SendError(w http.ResponseWriter) {
 	w.Write(res)
 }
 
-func Err(w http.ResponseWriter, status int, err error, msg string) {
-	e := NewHTTPError(status, msg, nil, err)
+func Err(w http.ResponseWriter, status int, err error, msg string, details interface{}) {
+	e := NewHTTPError(status, msg, details, err)
 	e.SendError(w)
 }
 
-func Err400(w http.ResponseWriter, err error, msg string) {
-	Err(w, StatusBadRequest, err, msg)
+func Err400(w http.ResponseWriter, err error, msg string, details interface{}) {
+	Err(w, StatusBadRequest, err, msg, details)
 }
 
-func Err500(w http.ResponseWriter, err error, msg string) {
-	Err(w, StatusInternalServerError, err, msg)
+func Err500(w http.ResponseWriter, err error, msg string, details interface{}) {
+	Err(w, StatusInternalServerError, err, msg, details)
 }
 
 func JSON(w http.ResponseWriter, data interface{}) {
 	res, err := json.Marshal(data)
 	if err != nil {
-		Err500(w, err, "error when encoding the response")
+		Err500(w, err, "error when encoding the response", nil)
 		return
 	}
 

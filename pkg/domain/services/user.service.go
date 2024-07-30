@@ -33,7 +33,7 @@ func NewUser(repo repositories.UserRepository) UserService {
 }
 
 // Login user
-func (us userService) Login(req requests.UserLogin) (responses.UserLogin, *utils.HTTPError) {
+func (us *userService) Login(req requests.UserLogin) (responses.UserLogin, *utils.HTTPError) {
 	loginErrors := utils.ValidateStruct(req)
 	if loginErrors != nil {
 		return responses.UserLogin{}, utils.NewHTTPError(utils.StatusBadRequest, "Invalid body", loginErrors, nil)
@@ -52,7 +52,10 @@ func (us userService) Login(req requests.UserLogin) (responses.UserLogin, *utils
 		return responses.UserLogin{}, e
 	}
 
-	user := userRepo.ToUser()
+	user, err := userRepo.ToUser()
+	if err != nil {
+		return responses.UserLogin{}, utils.NewHTTPError(utils.StatusInternalServerError, "Internal server error", "Internal server error", err)
+	}
 
 	// Create token
 	token, expiresAt, err := user.GenerateJWT(
@@ -65,17 +68,17 @@ func (us userService) Login(req requests.UserLogin) (responses.UserLogin, *utils
 
 	return responses.UserLogin{
 		ID:        user.ID,
-		Email:     user.Email,
+		Email:     user.Email.Value,
 		Lastname:  user.Lastname,
 		Firstname: user.Firstname,
-		CreatedAt: user.CreatedAt,
+		CreatedAt: user.CreatedAt.Format(time.RFC3339),
 		Token:     token,
-		ExpiresAt: expiresAt,
+		ExpiresAt: expiresAt.Format(time.RFC3339),
 	}, nil
 }
 
 // Create user
-func (us userService) Create(req requests.UserCreation) (responses.UserCreation, *utils.HTTPError) {
+func (us *userService) Create(req requests.UserCreation) (responses.UserCreation, *utils.HTTPError) {
 	creationErrors := utils.ValidateStruct(req)
 	if creationErrors != nil {
 		return responses.UserCreation{}, utils.NewHTTPError(utils.StatusBadRequest, "Invalid body", creationErrors, nil)
@@ -89,8 +92,8 @@ func (us userService) Create(req requests.UserCreation) (responses.UserCreation,
 		Firstname: req.Firstname,
 		Password:  entities.HashUserPassword(req.Password),
 		Email:     req.Email,
-		CreatedAt: now.Format(time.RFC3339),
-		UpdatedAt: now.Format(time.RFC3339),
+		CreatedAt: now.Format(utils.SqlDateTimeFormat),
+		UpdatedAt: now.Format(utils.SqlDateTimeFormat),
 	}
 
 	if err := us.userRepository.Create(user); err != nil {

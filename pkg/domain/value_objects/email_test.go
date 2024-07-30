@@ -43,14 +43,14 @@ func TestNewEmail(t *testing.T) {
 			value: "bad",
 			wanted: result{
 				email: Email{},
-				err:   e1,
+				err:   &e1,
 			},
 		},
 		{
 			value: "",
 			wanted: result{
 				email: Email{},
-				err:   e2,
+				err:   &e2,
 			},
 		},
 	}

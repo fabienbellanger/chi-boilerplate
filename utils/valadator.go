@@ -14,7 +14,7 @@ type ValidatorError struct {
 }
 
 // TODO: Change
-func (ve ValidatorError) Error() string {
+func (ve *ValidatorError) Error() string {
 	return "Field: %s, Tag: %s, Value: %s"
 }
 
@@ -22,9 +22,9 @@ func (ve ValidatorError) Error() string {
 type ValidatorErrors []ValidatorError
 
 // TODO: Change
-func (ve ValidatorErrors) Error() string {
+func (ve *ValidatorErrors) Error() string {
 	e := ""
-	for _, v := range ve {
+	for _, v := range *ve {
 		e += fmt.Sprintf("%s\n", v)
 	}
 	return e

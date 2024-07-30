@@ -20,12 +20,13 @@ func NewUserMysqlRepository(db *db.MySQL) *UserMysqlRepository {
 }
 
 // Login returns a user if a user is found
-func (u UserMysqlRepository) Login(req requests.UserLogin) (responses.UserLoginRepository, error) {
+func (u *UserMysqlRepository) Login(req requests.UserLogin) (responses.UserLoginRepository, error) {
 	var user responses.UserLoginRepository
 	row := u.db.QueryRowx(`
-		SELECT id, email, lastname, firstname, created_at 
+		SELECT id, email, lastname, firstname, created_at AS createdat
 		FROM users 
-		WHERE email = ? AND password = ? LIMIT 1`,
+		WHERE email = ? AND password = ?
+		LIMIT 1`,
 		req.Email,
 		req.Password,
 	)
@@ -37,7 +38,7 @@ func (u UserMysqlRepository) Login(req requests.UserLogin) (responses.UserLoginR
 }
 
 // Create creates a new user
-func (u UserMysqlRepository) Create(user requests.UserCreationRepository) error {
+func (u *UserMysqlRepository) Create(user requests.UserCreationRepository) error {
 	_, err := u.db.Exec(`
 		INSERT INTO users (id, email, password, lastname, firstname, created_at, updated_at) 
 		VALUES (?, ?, ?, ?, ?, ?, ?)`,

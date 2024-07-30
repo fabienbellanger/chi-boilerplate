@@ -18,7 +18,7 @@ func NewEmail(value string) (Email, error) {
 
 	err := e.Validate()
 	if err != nil {
-		return Email{}, err
+		return Email{}, &err
 	}
 
 	return e, nil

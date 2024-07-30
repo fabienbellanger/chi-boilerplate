@@ -20,7 +20,7 @@ func NewPassword(value string) (Password, error) {
 
 	err := p.Validate()
 	if err != nil {
-		return Password{}, err
+		return Password{}, &err
 	}
 
 	return p, nil

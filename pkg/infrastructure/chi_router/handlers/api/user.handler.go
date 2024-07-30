@@ -35,13 +35,13 @@ func (u *User) UserProtectedRoutes() {
 }
 
 func (u *User) login(w http.ResponseWriter, r *http.Request) {
-	var req requests.UserLogin
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		utils.Err400(w, err, "Error decoding body")
+	var body requests.UserLogin
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		utils.Err400(w, err, "Error decoding body", nil)
 		return
 	}
 
-	res, err := u.userUseCase.Login(req)
+	res, err := u.userUseCase.Login(body)
 	if err != nil {
 		err.SendError(w)
 		return
@@ -51,5 +51,17 @@ func (u *User) login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *User) create(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Register"))
+	var body requests.UserCreation
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		utils.Err400(w, err, "Error decoding body", nil)
+		return
+	}
+
+	res, err := u.userUseCase.Create(body)
+	if err != nil {
+		err.SendError(w)
+		return
+	}
+
+	utils.JSON(w, res)
 }
