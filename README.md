@@ -199,8 +199,16 @@ rm keys/private.ec.key
 
 ## TODO
 
+- [x] Add CORS middleware
+- [ ] Add Timeout middleware
+- [ ] Add RealIP middleware
+- [ ] Add ContentCharset middleware
+- [ ] Add Http Rate Limiting Middleware middleware
+- [ ] Add JWT / Auth middleware
+- [ ] Change / improve logger middleware
 - [ ] Add unit tests for domain 
 - [ ] Add scope to JWT
+- [ ] Add OpenAPI doc with BasicAuth support
 - [ ] Add Docker support
   - [ ] Try OpenTelemetry [middleware](https://github.com/gofiber/contrib/tree/main/otelfiber)
   - [ ] Mettre en place la stack Prometheus + Grafana pour la télémétrie

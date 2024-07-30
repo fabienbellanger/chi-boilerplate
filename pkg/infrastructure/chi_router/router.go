@@ -7,12 +7,11 @@ import (
 	"chi_boilerplate/pkg/domain/usecases"
 	"chi_boilerplate/pkg/infrastructure/chi_router/handlers/api"
 	"chi_boilerplate/pkg/infrastructure/chi_router/handlers/web"
+	"chi_boilerplate/pkg/infrastructure/logger"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 )
 
 // ChiServer is a struct that represents a Chi server
@@ -34,11 +33,13 @@ func NewChiServer(addr, port string, db *db.MySQL) ChiServer {
 // Start the HTTP server
 func (s *ChiServer) Start() error {
 	r := chi.NewRouter()
+	logger, err := logger.InitLogger()
+	if err != nil {
+		return err
+	}
 
 	// Middlewares
-	r.Use(middleware.RequestID)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
+	s.initMiddlewares(r, logger)
 
 	// Web routes
 	r.Get("/health-check", web.HealthCheck)
@@ -48,8 +49,6 @@ func (s *ChiServer) Start() error {
 
 	// API routes
 	r.Route("/api/v1", func(v1 chi.Router) {
-		v1.Use(CustomMiddleware)
-
 		// User routes
 		v1.Route("/users", func(u chi.Router) {
 			userRepo := sqlx_mysql.NewUserMysqlRepository(s.DB)
@@ -60,19 +59,8 @@ func (s *ChiServer) Start() error {
 			h.UserPublicRoutes()
 			h.UserProtectedRoutes()
 		})
-	})
+	}).With(initCORS())
 
 	fmt.Printf("Server started on %s:%s...\n", s.Addr, s.Port)
 	return http.ListenAndServe(fmt.Sprintf("%s:%s", s.Addr, s.Port), r)
-}
-
-// TODO: For test, remove later
-func CustomMiddleware(next http.Handler) http.Handler {
-	fn := func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		log.Println("Before response...")
-		next.ServeHTTP(w, r.WithContext(ctx))
-		log.Println("After response...")
-	}
-	return http.HandlerFunc(fn)
 }
