@@ -2,7 +2,6 @@ package utils
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 )
 
@@ -71,45 +70,52 @@ func NewHTTPError(code int, message string, details interface{}, err error) *HTT
 
 // Error returns the error message.
 func (e *HTTPError) Error() string {
-	return e.Message
+	return e.Err.Error()
 }
 
 // SendError sends the error to the client.
-func (e *HTTPError) SendError(w http.ResponseWriter) {
-	// TODO: Manage logging
-	log.Printf("Error: %v\n", e.Err)
-
+func (e *HTTPError) SendError(w http.ResponseWriter) error {
 	res, err := json.Marshal(e)
 	if err != nil {
-		Err500(w, err, "error when encoding the response", nil)
-		return
+		return Err500(w, err, "error when encoding the response", nil)
 	}
 
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(e.Code)
 	w.Write(res)
+
+	// We only log internal server errors
+	if e.Code == StatusInternalServerError {
+		return e.Err
+	}
+	return nil
 }
 
-func Err(w http.ResponseWriter, status int, err error, msg string, details interface{}) {
+func Err(w http.ResponseWriter, status int, err error, msg string, details interface{}) error {
 	e := NewHTTPError(status, msg, details, err)
-	e.SendError(w)
+	return e.SendError(w)
 }
 
-func Err400(w http.ResponseWriter, err error, msg string, details interface{}) {
-	Err(w, StatusBadRequest, err, msg, details)
+func Err400(w http.ResponseWriter, err error, msg string, details interface{}) error {
+	return Err(w, StatusBadRequest, err, msg, details)
 }
 
-func Err500(w http.ResponseWriter, err error, msg string, details interface{}) {
-	Err(w, StatusInternalServerError, err, msg, details)
+func Err401(w http.ResponseWriter, err error, msg string, details interface{}) error {
+	return Err(w, StatusUnauthorized, err, msg, nil)
 }
 
-func JSON(w http.ResponseWriter, data interface{}) {
+func Err500(w http.ResponseWriter, err error, msg string, details interface{}) error {
+	return Err(w, StatusInternalServerError, err, msg, details)
+}
+
+func JSON(w http.ResponseWriter, data interface{}) error {
 	res, err := json.Marshal(data)
 	if err != nil {
-		Err500(w, err, "error when encoding the response", nil)
-		return
+		return Err500(w, err, "error when encoding the response", nil)
 	}
 
 	w.Header().Add("Content-Type", "application/json")
 	w.Write(res)
+
+	return nil
 }

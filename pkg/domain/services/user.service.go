@@ -54,7 +54,7 @@ func (us *userService) Login(req requests.UserLogin) (responses.UserLogin, *util
 
 	user, err := userRepo.ToUser()
 	if err != nil {
-		return responses.UserLogin{}, utils.NewHTTPError(utils.StatusInternalServerError, "Internal server error", "Internal server error", err)
+		return responses.UserLogin{}, utils.NewHTTPError(utils.StatusInternalServerError, "Internal server error", "Error during authentication", err)
 	}
 
 	// Create token

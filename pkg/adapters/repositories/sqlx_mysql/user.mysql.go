@@ -2,6 +2,7 @@ package sqlx_mysql
 
 import (
 	"chi_boilerplate/pkg/adapters/db"
+	"chi_boilerplate/pkg/domain/repositories"
 	"chi_boilerplate/pkg/domain/requests"
 	"chi_boilerplate/pkg/domain/responses"
 
@@ -31,7 +32,7 @@ func (u *UserMysqlRepository) Login(req requests.UserLogin) (responses.UserLogin
 		req.Password,
 	)
 	if err := row.StructScan(&user); err != nil {
-		return user, err
+		return user, repositories.ErrUserNotFound
 	}
 
 	return user, nil

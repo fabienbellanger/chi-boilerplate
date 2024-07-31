@@ -1,47 +1,52 @@
 package chi_router
 
 import (
-	"log"
+	"chi_boilerplate/utils"
+	"github.com/lestrrat-go/jwx/v2/jwt"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/go-chi/jwtauth/v5"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-func (s *ChiServer) initMiddlewares(r *chi.Mux, log *zap.Logger) {
+var tokenAuth *jwtauth.JWTAuth
+
+func (s *ChiServer) initJWTToken() error {
+	algo := viper.GetString("JWT_ALGO")
+	key, err := utils.GetKeyFromAlgo(algo, viper.GetString("JWT_SECRET"), viper.GetString("JWT_PUBLIC_KEY_PATH"))
+	if err != nil {
+		return err
+	}
+
+	tokenAuth = jwtauth.New(algo, key, nil)
+
+	return nil
+}
+
+func (s *ChiServer) initMiddlewares(r *chi.Mux) {
 	r.Use(middleware.RequestID)
 	if viper.GetBool("ENABLE_ACCESS_LOG") {
-		r.Use(initLogger(log))
+		r.Use(s.initAccessLogger())
 	}
 	r.Use(middleware.Recoverer)
 
 	// Profiler
 	if viper.GetBool("SERVER_PPROF") {
 		r.Group(func(r chi.Router) {
-			r.Use(initBasicAuth())
+			r.Use(s.initBasicAuth())
 
 			r.Mount("/debug", middleware.Profiler())
 		})
 	}
 }
 
-func initCORS() func(next http.Handler) http.Handler {
-	return cors.Handler(cors.Options{
-		AllowedOrigins:   viper.GetStringSlice("CORS_ALLOWED_ORIGINS"),
-		AllowedMethods:   viper.GetStringSlice("CORS_ALLOWED_METHODS"),
-		AllowedHeaders:   viper.GetStringSlice("CORS_ALLOWED_HEADERS"),
-		ExposedHeaders:   viper.GetStringSlice("CORS_EXPOSED_HEADERS"),
-		AllowCredentials: viper.GetBool("CORS_ALLOW_CREDENTIALS"),
-		MaxAge:           viper.GetInt("CORS_MAX_AGE"),
-	})
-}
-
-func initLogger(log *zap.Logger) func(next http.Handler) http.Handler {
+func (s *ChiServer) initAccessLogger() func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now().UTC()
@@ -63,17 +68,53 @@ func initLogger(log *zap.Logger) func(next http.Handler) http.Handler {
 				// zap.String("requestId", fmt.Sprintf("%s", c.Locals("requestid"))),
 			}
 
-			log.Info("", fields...)
+			s.Logger.Info("", fields...)
 		}
 		return http.HandlerFunc(fn)
 	}
 }
 
-func initBasicAuth() func(next http.Handler) http.Handler {
+func (s *ChiServer) initCORS() func(next http.Handler) http.Handler {
+	return cors.Handler(cors.Options{
+		AllowedOrigins:   viper.GetStringSlice("CORS_ALLOWED_ORIGINS"),
+		AllowedMethods:   viper.GetStringSlice("CORS_ALLOWED_METHODS"),
+		AllowedHeaders:   viper.GetStringSlice("CORS_ALLOWED_HEADERS"),
+		ExposedHeaders:   viper.GetStringSlice("CORS_EXPOSED_HEADERS"),
+		AllowCredentials: viper.GetBool("CORS_ALLOW_CREDENTIALS"),
+		MaxAge:           viper.GetInt("CORS_MAX_AGE"),
+	})
+}
+
+func (s *ChiServer) initBasicAuth() func(next http.Handler) http.Handler {
 	creds := make(map[string]string, 1)
 	creds[viper.GetString("SERVER_BASICAUTH_USERNAME")] = viper.GetString("SERVER_BASICAUTH_PASSWORD")
 
-	log.Printf("%v\n", creds)
-
 	return middleware.BasicAuth("Restricted", creds)
+}
+
+func (s *ChiServer) initJWT(r chi.Router) {
+	r.Use(jwtauth.Verifier(tokenAuth))
+	r.Use(s.jwtAuthenticator(tokenAuth))
+}
+
+func (s *ChiServer) jwtAuthenticator(ja *jwtauth.JWTAuth) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		hfn := func(w http.ResponseWriter, r *http.Request) {
+			token, _, err := jwtauth.FromContext(r.Context())
+
+			if err != nil {
+				utils.Err401(w, err, "Unauthorized", nil) // TODO: Error not managed
+				return
+			}
+
+			if token == nil || jwt.Validate(token, ja.ValidateOptions()...) != nil {
+				utils.Err401(w, nil, "Unauthorized", nil) // TODO: Error not managed
+				return
+			}
+
+			// Token is authenticated, pass it through
+			next.ServeHTTP(w, r)
+		}
+		return http.HandlerFunc(hfn)
+	}
 }

@@ -2,6 +2,7 @@ package cli
 
 import (
 	"chi_boilerplate/pkg/infrastructure/chi_router"
+	"chi_boilerplate/pkg/infrastructure/logger"
 	"log"
 
 	"github.com/spf13/cobra"
@@ -32,7 +33,12 @@ func startServer() {
 		log.Fatalln(err)
 	}
 
-	server := chi_router.NewChiServer(viper.GetString("SERVER_ADDR"), viper.GetString("SERVER_PORT"), db)
+	l, err := logger.InitLogger()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	server := chi_router.NewChiServer(viper.GetString("SERVER_ADDR"), viper.GetString("SERVER_PORT"), db, l)
 	if err = server.Start(); err != nil {
 		log.Fatalln(err)
 	}

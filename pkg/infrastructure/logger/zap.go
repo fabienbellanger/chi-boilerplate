@@ -12,8 +12,10 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+type ZapLogger = zap.Logger
+
 // InitLogger initializes custom Zap logger configuration.
-func InitLogger() (*zap.Logger, error) {
+func InitLogger() (*ZapLogger, error) {
 	// Logs outputs
 	// ------------
 	outputs, err := getLoggerOutputs(viper.GetStringSlice("LOG_OUTPUTS"), viper.GetString("APP_NAME"), viper.GetString("LOG_PATH"))

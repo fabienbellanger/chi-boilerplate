@@ -198,7 +198,6 @@ rm keys/private.ec.key
 
 ## TODO
 
-- [ ] Add JWT / Auth middleware
 - [ ] Add `Timeout` middleware
 - [ ] Add `RealIP` middleware
 - [ ] Add `ContentCharset` middleware
@@ -214,3 +213,4 @@ rm keys/private.ec.key
 - [ ] Try test suite [ginkgo](https://github.com/onsi/ginkgo) and [gomega](https://github.com/onsi/gomega)
 - [x] Add `CORS` middleware
 - [x] Add OpenAPI doc with BasicAuth support
+- [x] Add JWT / Auth middleware
