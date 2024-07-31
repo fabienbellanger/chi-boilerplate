@@ -10,7 +10,6 @@ A simple boilerplate for [Chi](https://go-chi.io)
 
 - [Commands list](#commands-list)
 - [Makefile commands](#makefile-commands)
-- [Routes](#routes)
 - [Swagger](#swagger)
 - [Golang web server in production](#golang-web-server-in-production)
 - [Go documentation](#go-documentation)
@@ -199,19 +198,19 @@ rm keys/private.ec.key
 
 ## TODO
 
-- [x] Add CORS middleware
-- [ ] Add Timeout middleware
-- [ ] Add RealIP middleware
-- [ ] Add ContentCharset middleware
-- [ ] Add Http Rate Limiting Middleware middleware
 - [ ] Add JWT / Auth middleware
+- [ ] Add `Timeout` middleware
+- [ ] Add `RealIP` middleware
+- [ ] Add `ContentCharset` middleware
+- [ ] Add `Http Rate Limiting Middleware` middleware
 - [ ] Change / improve logger middleware
-- [ ] Add unit tests for domain 
+- [ ] Add unit tests for domain and infrastructure
 - [ ] Add scope to JWT
-- [ ] Add OpenAPI doc with BasicAuth support
 - [ ] Add Docker support
   - [ ] Try OpenTelemetry [middleware](https://github.com/gofiber/contrib/tree/main/otelfiber)
   - [ ] Mettre en place la stack Prometheus + Grafana pour la télémétrie
   - [ ] Add Prometheus metrics ([Example](https://github.com/stefanprodan/dockprom))
   - [ ] Create a first user to use API
 - [ ] Try test suite [ginkgo](https://github.com/onsi/ginkgo) and [gomega](https://github.com/onsi/gomega)
+- [x] Add `CORS` middleware
+- [x] Add OpenAPI doc with BasicAuth support

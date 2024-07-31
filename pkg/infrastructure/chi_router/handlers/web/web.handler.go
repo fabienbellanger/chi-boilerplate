@@ -1,10 +1,9 @@
 package web
 
 import (
-	"encoding/json"
+	"chi_boilerplate/utils"
+	"html/template"
 	"net/http"
-
-	"github.com/go-chi/chi/v5"
 )
 
 // HealthCheck returns status code 200.
@@ -12,34 +11,16 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// TODO: Remove this handler
-func Panic(w http.ResponseWriter, r *http.Request) {
-	panic("Panic test")
-}
-
-// TODO: Remove this handler
-func GetHello(w http.ResponseWriter, r *http.Request) {
-	// curl "http://localhost:3000/hello/fabien?q=test"
-	name := chi.URLParam(r, "name")
-	query := r.URL.Query().Get("q")
-
-	w.Write([]byte("Hello " + name + " with q=" + query))
-}
-
-// TODO: Remove this handler
-func PostHello(w http.ResponseWriter, r *http.Request) {
-	// curl -H "Content-Type: application/json" -d '{"name":"xyz"}' --request POST "http://localhost:3000/hello"
-	type Person struct {
-		Name string
-	}
-
-	var p Person
-	err := json.NewDecoder(r.Body).Decode(&p)
+// GetAPIv1Doc returns the API v1 documentation.
+func GetAPIv1Doc(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles("./templates/doc_api_v1.gohtml")
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Error decoding body"))
+		utils.Err500(w, err, "Error when parsing HTML template", nil)
 		return
 	}
 
-	w.Write([]byte("Hello " + p.Name + "!"))
+	if err := tmpl.Execute(w, nil); err != nil {
+		utils.Err500(w, err, "Error when executing HTML template", nil)
+		return
+	}
 }

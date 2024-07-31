@@ -1,0 +1,219 @@
+openapi: '3.0.2'
+info:
+  title: Chi Boilerplate
+  version: '1.0'
+  description: REST API for Chi boilerplate
+  contact:
+    name: Fabien Bellanger
+    email: valentil@gmail.com
+  license:
+    name: MIT
+    url: https://github.com/fabienbellanger/chi-boilerplate/blob/main/LICENSE
+servers:
+  - url: http://localhost:{port}/api/v1
+    description: Local server
+    variables:
+      port:
+        enum:
+          - "3002"
+          - "9090"
+        default: "3002"
+  - url: https://<base URL>/api/v1
+    description: Production server
+paths:
+  /login:
+    post:
+      description: Authenticate a user
+      tags:
+        - "Authentication"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLoginRequest'
+            example:
+              email: test@gmail.com
+              password: "12548745714"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserLoginResponse'
+        '400':
+            $ref: "#/components/responses/BadRequest"
+        '401':
+            $ref: "#/components/responses/Unauthorized"
+        '500':
+            $ref: "#/components/responses/InternalServerError"
+
+  /users:
+    post:
+      summary: ""
+      description: User creation
+      tags:
+        - "Users"
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreationRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCreationResponse'
+        '400':
+          $ref: "#/components/responses/BadRequest"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '500':
+          $ref: "#/components/responses/InternalServerError"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: httpè
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    Unauthorized:
+      description: Access token is missing or invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResponseError'
+    BadRequest:
+      description: Invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResponseError'
+        text/plain:
+          schema:
+            type: string
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResponseError'
+    MethodNotAllowed:
+      description: Method Not Allowed
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResponseError'
+  schemas:
+    PaginateTotal:
+      type: object
+      properties:
+        total:
+          type: integer
+      required:
+        - total
+    ResponseError:
+      type: object
+      properties:
+        code:
+          type: integer
+          minimum: 100
+          maximum: 527
+        message:
+          type: string
+      required:
+        - code
+        - message
+    UserLoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+      required:
+        - email
+        - password
+    UserLoginResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        lastname:
+          type: string
+        firstname:
+          type: string
+        email:
+          type: string
+          format: email
+        token:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        expired_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - lastname
+        - firstname
+        - email
+        - token
+        - created_at
+        - expired_at
+    UserCreationRequest:
+      type: object
+      properties:
+        lastname:
+          type: string
+        firstname:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+      required:
+        - lastname
+        - firstname
+        - username
+        - password
+    UserCreationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        lastname:
+          type: string
+        firstname:
+          type: string
+        email:
+          type: string
+          format: email
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - lastname
+        - firstname
+        - email
+        - created_at
+        - updated_at

@@ -1,6 +1,7 @@
 package chi_router
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -20,9 +21,12 @@ func (s *ChiServer) initMiddlewares(r *chi.Mux, log *zap.Logger) {
 	r.Use(middleware.Recoverer)
 
 	// Profiler
-	// TODO: Add basic Auth
 	if viper.GetBool("SERVER_PPROF") {
-		r.Mount("/debug", middleware.Profiler())
+		r.Group(func(r chi.Router) {
+			r.Use(initBasicAuth())
+
+			r.Mount("/debug", middleware.Profiler())
+		})
 	}
 }
 
@@ -63,4 +67,13 @@ func initLogger(log *zap.Logger) func(next http.Handler) http.Handler {
 		}
 		return http.HandlerFunc(fn)
 	}
+}
+
+func initBasicAuth() func(next http.Handler) http.Handler {
+	creds := make(map[string]string, 1)
+	creds[viper.GetString("SERVER_BASICAUTH_USERNAME")] = viper.GetString("SERVER_BASICAUTH_PASSWORD")
+
+	log.Printf("%v\n", creds)
+
+	return middleware.BasicAuth("Restricted", creds)
 }
