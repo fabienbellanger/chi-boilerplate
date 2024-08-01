@@ -104,6 +104,14 @@ func Err401(w http.ResponseWriter, err error, msg string, details interface{}) e
 	return Err(w, StatusUnauthorized, err, msg, nil)
 }
 
+func Err404(w http.ResponseWriter, err error, msg string, details interface{}) error {
+	return Err(w, StatusNotFound, err, msg, nil)
+}
+
+func Err405(w http.ResponseWriter, err error, msg string, details interface{}) error {
+	return Err(w, StatusMethodNotAllowed, err, msg, nil)
+}
+
 func Err500(w http.ResponseWriter, err error, msg string, details interface{}) error {
 	return Err(w, StatusInternalServerError, err, msg, details)
 }

@@ -9,6 +9,7 @@ import (
 	"chi_boilerplate/pkg/infrastructure/chi_router/handlers/api"
 	"chi_boilerplate/pkg/infrastructure/chi_router/handlers/web"
 	"chi_boilerplate/pkg/infrastructure/logger"
+	"chi_boilerplate/utils"
 	"fmt"
 	"net/http"
 
@@ -35,6 +36,17 @@ func NewChiServer(addr, port string, db *db.MySQL, l logger.CustomLogger) ChiSer
 
 // Start the HTTP server
 func (s *ChiServer) Start() error {
+	r, err := s.Setup()
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Server started on %s:%s...\n", s.Addr, s.Port)
+	return http.ListenAndServe(fmt.Sprintf("%s:%s", s.Addr, s.Port), r)
+}
+
+// Setup the HTTP server
+func (s *ChiServer) Setup() (*chi.Mux, error) {
 	r := chi.NewRouter()
 
 	// Middlewares
@@ -43,14 +55,19 @@ func (s *ChiServer) Start() error {
 	// JWT token
 	err := s.initJWTToken()
 	if err != nil {
-		return err
+		return r, err
 	}
 
 	// Routes
+	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		utils.Err404(w, nil, "Ressource not found", nil)
+	})
+	r.MethodNotAllowed(func(w http.ResponseWriter, r *http.Request) {
+		utils.Err405(w, nil, "Method not allowed", nil)
+	})
 	s.routes(r)
 
-	fmt.Printf("Server started on %s:%s...\n", s.Addr, s.Port)
-	return http.ListenAndServe(fmt.Sprintf("%s:%s", s.Addr, s.Port), r)
+	return r, nil
 }
 
 func (s *ChiServer) HandleError(f func(w http.ResponseWriter, r *http.Request) error) func(w http.ResponseWriter, r *http.Request) {

@@ -28,7 +28,6 @@ type Config struct {
 }
 
 // dsn returns the DSN if the configuration is OK or an error in other case
-// TODO: Add test
 func (c *Config) dsn() (dsn string, err error) {
 	if c.Host == "" || c.Port == 0 || c.Username == "" || c.Password == "" {
 		return dsn, errors.New("error in database configuration")
