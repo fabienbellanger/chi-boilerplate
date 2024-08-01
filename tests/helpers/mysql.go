@@ -1,56 +1,29 @@
-package tests
+package helpers
 
 import (
 	"chi_boilerplate/pkg/adapters/db"
+	"chi_boilerplate/pkg/adapters/repositories/sqlx_mysql"
+	"chi_boilerplate/pkg/domain/entities"
+	"chi_boilerplate/pkg/domain/requests"
 	"chi_boilerplate/pkg/infrastructure/chi_router"
 	"chi_boilerplate/pkg/infrastructure/logger"
+	"chi_boilerplate/utils"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"math/rand"
 	"time"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/mysql"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/google/uuid"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
-
-const (
-	UserEmail    = "test@test.com"
-	UserPassword = "00000000"
-)
-
-// Test defines a structure for specifying input and output data of a single test case.
-type Test struct {
-	Description string
-
-	// Test input
-	Route   string
-	Method  string
-	Body    io.Reader
-	Headers []Header
-
-	// Check
-	CheckError bool
-	CheckBody  bool
-	CheckCode  bool
-
-	// Expected output
-	ExpectedError bool
-	ExpectedCode  int
-	ExpectedBody  string
-}
-
-// Header represents an header value.
-type Header struct {
-	Key   string
-	Value string
-}
 
 // TestMysql is used to create and use a database for tests.
 type TestMysql struct {
@@ -60,7 +33,7 @@ type TestMysql struct {
 }
 
 // newTestMysql returns a TestMysql instance.
-func newTestMysql() (TestMysql, error) {
+func newTestMysql(m string) (TestMysql, error) {
 	rand.New(rand.NewSource(time.Now().UTC().UnixNano()))
 	dbName := viper.GetString("DB_DATABASE") + "__" + fmt.Sprintf("%08d", rand.Int63n(1e8))
 	config := db.Config{
@@ -85,11 +58,14 @@ func newTestMysql() (TestMysql, error) {
 	// Create database for test, use it and run migrations
 	dbt.DB.Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS `%s`;", dbName))
 	dbt.DB.Exec(fmt.Sprintf("USE `%s`;", dbName))
-	// TODO !
-	// dbt.MakeMigrations()
+	dbt.Database(dbName)
+	err = runMySQLMigrations(m, dbt)
+	if err != nil {
+		return TestMysql{}, err
+	}
 
 	// Create first user and get token
-	token, err := createUserAndAuthenticate(dbt)
+	token, err := createMySQLUserAndAuthenticate(dbt)
 	if err != nil {
 		return TestMysql{}, err
 	}
@@ -97,15 +73,8 @@ func newTestMysql() (TestMysql, error) {
 	return TestMysql{DB: dbt, name: dbName, Token: token}, nil
 }
 
-// Drop database after the test.
-func (tdb *TestMysql) Drop() error {
-	_, err := tdb.DB.DB.Exec(fmt.Sprintf("DROP DATABASE IF EXISTS `%s`;", tdb.name))
-
-	return err
-}
-
 // Init initializes configuration from .env path and returns TestMysql.
-func Init(p string) TestMysql {
+func InitMySQL(p, m string) TestMysql {
 	viper.SetConfigFile(p)
 	viper.ReadInConfig()
 
@@ -115,7 +84,7 @@ func Init(p string) TestMysql {
 	viper.Set("SERVER_PPROF", false)
 	viper.Set("ENABLE_ACCESS_LOG", false)
 
-	tdb, err := newTestMysql()
+	tdb, err := newTestMysql(m)
 	if err != nil {
 		log.Panicf("%v\n", err)
 	}
@@ -123,10 +92,10 @@ func Init(p string) TestMysql {
 }
 
 // Execute runs all tests.
-func Execute(t *testing.T, db *db.MySQL, tests []Test, templatesPath string) {
+func (tdb *TestMysql) Execute(t *testing.T, tests []Test, templatesPath string) {
 	// Set up the app as it is done in the main function
 	l, _ := logger.NewZapLogger()
-	s := chi_router.NewChiServer("localhost", "7777", db, l)
+	s := chi_router.NewChiServer("", "", tdb.DB, l)
 	app, _ := s.Setup()
 
 	// Iterate through test single test cases
@@ -161,27 +130,70 @@ func Execute(t *testing.T, db *db.MySQL, tests []Test, templatesPath string) {
 	}
 }
 
-// TODO
-func createUserAndAuthenticate(db *db.MySQL) (token string, err error) {
-	return
+// Drop database after the test.
+func (tdb *TestMysql) Drop() error {
+	_, err := tdb.DB.DB.Exec(fmt.Sprintf("DROP DATABASE IF EXISTS `%s`;", tdb.name))
+
+	return err
 }
 
-// executeRequest, creates a new ResponseRecorder
-// then executes the request by calling ServeHTTP in the router
-// after which the handler writes the response to the response recorder
-// which we can then inspect.
-func executeRequest(req *http.Request, s *chi.Mux) *httptest.ResponseRecorder {
-	rr := httptest.NewRecorder()
-	s.ServeHTTP(rr, req)
-
-	return rr
-}
-
-// JsonToString converts a JSON to a string.
-func JsonToString(d interface{}) string {
-	b, err := json.Marshal(d)
+func runMySQLMigrations(m string, db *db.MySQL) error {
+	newDSN, err := db.DSN()
 	if err != nil {
-		log.Panicf("%v\n", err)
+		return err
 	}
-	return string(b)
+
+	mg, err := migrate.New(
+		fmt.Sprintf("file://%s", m),
+		fmt.Sprintf("mysql://%s", newDSN))
+	if err != nil {
+		return err
+	}
+
+	err = mg.Up()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func createMySQLUserAndAuthenticate(db *db.MySQL) (token string, err error) {
+	// Create first user
+	now := time.Now()
+	userID := uuid.New()
+	userRepo := sqlx_mysql.NewUserMysqlRepository(db)
+	err = userRepo.Create(requests.UserCreationRepository{
+		ID:        userID.String(),
+		Lastname:  "Test",
+		Firstname: "Test",
+		Password:  entities.HashUserPassword(UserPassword),
+		Email:     UserEmail,
+		CreatedAt: now.Format(utils.SqlDateTimeFormat),
+		UpdatedAt: now.Format(utils.SqlDateTimeFormat),
+	})
+	if err != nil {
+		return
+	}
+
+	// Get User
+	u, err := userRepo.Login(requests.UserLogin{
+		Email:    UserEmail,
+		Password: entities.HashUserPassword(UserPassword),
+	})
+	if err != nil {
+		return
+	}
+
+	// Get token
+	user, err := u.ToUser()
+	if err != nil {
+		return
+	}
+	token, _, err = user.GenerateJWT(viper.GetDuration("JWT_LIFETIME"), viper.GetString("JWT_ALGO"), viper.GetString("JWT_SECRET"))
+	if err != nil {
+		return
+	}
+
+	return
 }

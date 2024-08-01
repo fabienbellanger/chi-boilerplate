@@ -7,7 +7,8 @@ import (
 
 // MySQL is a struct that contains the database connection
 type MySQL struct {
-	DB *sqlx.DB
+	DB     *sqlx.DB
+	config *Config
 }
 
 // NewMySQL creates a new MySQL database connection
@@ -28,6 +29,15 @@ func NewMySQL(config *Config) (*MySQL, error) {
 	db.SetMaxIdleConns(config.MaxIdleConns)
 
 	return &MySQL{
-		DB: db,
+		DB:     db,
+		config: config,
 	}, nil
+}
+
+func (m *MySQL) DSN() (string, error) {
+	return m.config.dsn()
+}
+
+func (m *MySQL) Database(d string) {
+	m.config.Database = d
 }

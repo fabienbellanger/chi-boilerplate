@@ -1,15 +1,16 @@
 package tests
 
 import (
+	"chi_boilerplate/tests/helpers"
 	"strings"
 	"testing"
 )
 
 func TestWebRoutes(t *testing.T) {
-	tdb := Init("../.env")
+	tdb := helpers.InitMySQL("../.env", "../migrations")
 	defer tdb.Drop()
 
-	useCases := []Test{
+	useCases := []helpers.Test{
 		{
 			Description:  "Health Check route",
 			Route:        "/health-check",
@@ -24,7 +25,7 @@ func TestWebRoutes(t *testing.T) {
 			Route:       "/not-exists",
 			Method:      "GET",
 			Body:        strings.NewReader("v=1"),
-			Headers: []Header{
+			Headers: []helpers.Header{
 				{Key: "Content-Type", Value: "application/x-www-form-urlencoded"},
 			},
 			CheckCode:     true,
@@ -35,5 +36,5 @@ func TestWebRoutes(t *testing.T) {
 		},
 	}
 
-	Execute(t, tdb.DB, useCases, "../templates")
+	tdb.Execute(t, useCases, "../templates")
 }
