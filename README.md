@@ -202,7 +202,6 @@ rm keys/private.ec.key
 - [ ] Add `RealIP` middleware
 - [ ] Add `ContentCharset` middleware
 - [ ] Add `Http Rate Limiting Middleware` middleware
-- [ ] Add unit tests for domain and infrastructure
 - [ ] Add scope to JWT
 - [ ] Add Docker support
   - [ ] Try OpenTelemetry [middleware](https://github.com/gofiber/contrib/tree/main/otelfiber)
@@ -214,3 +213,4 @@ rm keys/private.ec.key
 - [x] Add OpenAPI doc with BasicAuth support
 - [x] Add JWT / Auth middleware
 - [x] Change / improve logger middleware
+- [x] Add unit tests for infrastructure

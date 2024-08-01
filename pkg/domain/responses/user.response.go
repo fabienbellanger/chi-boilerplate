@@ -27,6 +27,7 @@ type UserLoginRepository struct {
 }
 
 // ToUser converts UserLoginRepository to User
+// TODO: Add tests
 func (ulr *UserLoginRepository) ToUser() (entities.User, error) {
 	email, err := vo.NewEmail(ulr.Email)
 	if err != nil {
