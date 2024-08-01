@@ -6,7 +6,9 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-type ZapLogger = zap.Logger
+type ZapLogger struct {
+	inner *zap.Logger
+}
 
 // NewZapLogger creates a new custom Zap logger.
 func NewZapLogger() (*ZapLogger, error) {
@@ -34,12 +36,84 @@ func NewZapLogger() (*ZapLogger, error) {
 			EncodeCaller: zapcore.ShortCallerEncoder,
 		},
 	}
-	logger, err := cfg.Build()
+
+	defaultLogger, err := zap.NewProduction()
 	if err != nil {
-		return zap.NewProduction()
+		return nil, err
 	}
 
-	return logger, nil
+	logger, err := cfg.Build()
+	if err != nil {
+		return &ZapLogger{defaultLogger}, nil
+	}
+
+	return &ZapLogger{logger}, nil
+}
+
+// FromFields converts fields to zap.Field.
+func (l *ZapLogger) FromFields(fields Fields) interface{} {
+	zapFields := make([]zap.Field, len(fields))
+	for i, f := range fields {
+		switch f.Type {
+		case "int":
+			zapFields[i] = zap.Int(f.Key, f.Value.(int))
+		case "string":
+			zapFields[i] = zap.String(f.Key, f.Value.(string))
+		case "error":
+			zapFields[i] = zap.Error(f.Value.(error))
+		default:
+			zapFields[i] = zap.Any(f.Key, f.Value)
+		}
+	}
+	return zapFields
+}
+
+func (l *ZapLogger) Debug(msg string, fields ...Fields) {
+	var zapFields []zap.Field
+	if len(fields) == 1 {
+		zapFields = l.FromFields(fields[0]).([]zap.Field)
+	}
+	l.inner.Debug(msg, zapFields...)
+}
+
+func (l *ZapLogger) Info(msg string, fields ...Fields) {
+	var zapFields []zap.Field
+	if len(fields) == 1 {
+		zapFields = l.FromFields(fields[0]).([]zap.Field)
+	}
+	l.inner.Info(msg, zapFields...)
+}
+
+func (l *ZapLogger) Warn(msg string, fields ...Fields) {
+	var zapFields []zap.Field
+	if len(fields) == 1 {
+		zapFields = l.FromFields(fields[0]).([]zap.Field)
+	}
+	l.inner.Warn(msg, zapFields...)
+}
+
+func (l *ZapLogger) Error(msg string, fields ...Fields) {
+	var zapFields []zap.Field
+	if len(fields) == 1 {
+		zapFields = l.FromFields(fields[0]).([]zap.Field)
+	}
+	l.inner.Error(msg, zapFields...)
+}
+
+func (l *ZapLogger) Fatal(msg string, fields ...Fields) {
+	var zapFields []zap.Field
+	if len(fields) == 1 {
+		zapFields = l.FromFields(fields[0]).([]zap.Field)
+	}
+	l.inner.Fatal(msg, zapFields...)
+}
+
+func (l *ZapLogger) Panic(msg string, fields ...Fields) {
+	var zapFields []zap.Field
+	if len(fields) == 1 {
+		zapFields = l.FromFields(fields[0]).([]zap.Field)
+	}
+	l.inner.Panic(msg, zapFields...)
 }
 
 // getZapLoggerLevel returns the minimum log level.
@@ -67,19 +141,4 @@ func getZapLoggerLevel(l string, env string) (level zapcore.Level) {
 		}
 	}
 	return
-}
-
-// toZapFileds converts fields to zap.Field.
-// TODO: Add tests
-func toZapFileds(fields ...interface{}) []zap.Field {
-	zapFields := make([]zap.Field, len(fields))
-	for i, field := range fields {
-		if f, ok := field.(zap.Field); ok {
-			zapFields[i] = f
-		} /* else {
-			// Handle the case where the field is not of type zap.Field
-			zapFields[i] = zap.Any(fmt.Sprintf("field%d", i), field)
-		}*/
-	}
-	return zapFields
 }

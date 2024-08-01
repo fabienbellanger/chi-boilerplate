@@ -7,20 +7,37 @@ import (
 	"path"
 
 	"github.com/fabienbellanger/goutils"
-	"go.uber.org/zap"
 )
 
-type CustomLogger interface {
-	// Debug(msg string, fields ...interface{})
-	Info(msg string, fields ...interface{})
-	// Warn(msg string, fields ...interface{})
-	Error(msg string, fields ...interface{})
-	// Fatal(msg string, fields ...interface{})
-	// Panic(msg string, fields ...interface{})
+// Fields is a slice of Field
+type Fields = []Field
+
+// Field is a struct that represents a log field.
+type Field struct {
+	Key   string
+	Value interface{}
+	Type  string
 }
 
-type CustomLog struct {
-	inner *zap.Logger
+// NewField creates a new field.
+// Type must be one of the following: int, string, error.
+func NewField(k string, t string, v interface{}) Field {
+	return Field{
+		Key:   k,
+		Type:  t,
+		Value: v,
+	}
+}
+
+// CustomLogger is the interface that a logger must implement.
+type CustomLogger interface {
+	FromFields(fields Fields) interface{}
+	Debug(msg string, fields ...Fields)
+	Info(msg string, fields ...Fields)
+	Warn(msg string, fields ...Fields)
+	Error(msg string, fields ...Fields)
+	Fatal(msg string, fields ...Fields)
+	Panic(msg string, fields ...Fields)
 }
 
 // getLoggerOutputs returns an array with the log outputs.
@@ -45,14 +62,4 @@ func getLoggerOutputs(logOutputs []string, appName, filePath string) (outputs []
 		outputs = append(outputs, "stdout")
 	}
 	return
-}
-
-func (c *CustomLog) Info(msg string, fields ...interface{}) {
-	zapFields := toZapFileds(fields...)
-	c.inner.Info(msg, zapFields...)
-}
-
-func (c *CustomLog) Error(msg string, fields ...interface{}) {
-	zapFields := toZapFileds(fields...)
-	c.inner.Error(msg, zapFields...)
 }

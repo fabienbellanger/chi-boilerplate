@@ -2,6 +2,7 @@ package chi_router
 
 import (
 	"chi_boilerplate/pkg/infrastructure/chi_router/handlers"
+	"chi_boilerplate/pkg/infrastructure/logger"
 	"chi_boilerplate/utils"
 	"context"
 	"fmt"
@@ -16,8 +17,6 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/spf13/viper"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 var tokenAuth *jwtauth.JWTAuth
@@ -35,8 +34,7 @@ func (s *ChiServer) initJWTToken() error {
 }
 
 func (s *ChiServer) initMiddlewares(r *chi.Mux) {
-	r.Use(s.requestID)
-
+	r.Use(s.requestID) // Must be before the access logger
 	if viper.GetBool("ENABLE_ACCESS_LOG") {
 		r.Use(s.initAccessLogger())
 	}
@@ -56,25 +54,29 @@ func (s *ChiServer) initAccessLogger() func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now().UTC()
-			requestId := fmt.Sprintf("%s", r.Context().Value(handlers.RequestIDKey("request_id")))
+			ctxID := r.Context().Value(handlers.RequestIDKey("request_id"))
+			var requestId string
+			if ctxID != nil {
+				requestId = fmt.Sprintf("%s", r.Context().Value(handlers.RequestIDKey("request_id")))
+			}
 			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
 
 			next.ServeHTTP(ww, r)
 
 			stop := time.Since(start)
 			url := r.Host + r.RequestURI // TODO: Do better, missing https:// or http://
-			fields := []zapcore.Field{
-				zap.Int("code", ww.Status()),
-				zap.String("method", r.Method),
-				zap.String("path", r.URL.Path),
-				zap.String("url", url),
-				zap.String("ip", r.RemoteAddr), // TODO: Remove port
-				zap.String("userAgent", r.UserAgent()),
-				zap.String("latency", stop.String()),
-				zap.String("request_id", requestId),
+			fields := logger.Fields{
+				logger.NewField("code", "int", ww.Status()),
+				logger.NewField("method", "string", r.Method),
+				logger.NewField("path", "string", r.URL.Path),
+				logger.NewField("url", "string", url),
+				logger.NewField("ip", "string", r.RemoteAddr), // TODO: Remove port
+				logger.NewField("userAgent", "string", r.UserAgent()),
+				logger.NewField("latency", "string", stop.String()),
+				logger.NewField("request_id", "string", requestId),
 			}
 
-			s.Logger.Info("", fields...)
+			s.Logger.Info("", fields)
 		}
 		return http.HandlerFunc(fn)
 	}
@@ -128,12 +130,10 @@ func (s *ChiServer) jwtAuthenticator(ja *jwtauth.JWTAuth) func(http.Handler) htt
 func (s *ChiServer) requestID(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		id := uuid.New().String()
-
 		ctx := context.WithValue(r.Context(), handlers.RequestIDKey("request_id"), id)
 
 		w.Header().Add("X-Request-Id", id)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
-
 	})
 }

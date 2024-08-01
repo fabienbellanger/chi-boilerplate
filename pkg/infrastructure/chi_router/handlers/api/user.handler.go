@@ -16,11 +16,11 @@ import (
 type User struct {
 	router      chi.Router
 	userUseCase usecases.User
-	logger      *logger.ZapLogger
+	logger      logger.CustomLogger
 }
 
 // NewUser returns a new Handler
-func NewUser(r chi.Router, l *logger.ZapLogger, userUseCase usecases.User) User {
+func NewUser(r chi.Router, l logger.CustomLogger, userUseCase usecases.User) User {
 	return User{
 		router:      r,
 		userUseCase: userUseCase,

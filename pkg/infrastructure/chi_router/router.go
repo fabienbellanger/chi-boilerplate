@@ -20,11 +20,11 @@ type ChiServer struct {
 	Addr   string
 	Port   string
 	DB     *db.MySQL
-	Logger *logger.ZapLogger
+	Logger logger.CustomLogger
 }
 
 // NewChiServer creates a new ChiServer
-func NewChiServer(addr, port string, db *db.MySQL, l *logger.ZapLogger) ChiServer {
+func NewChiServer(addr, port string, db *db.MySQL, l logger.CustomLogger) ChiServer {
 	return ChiServer{
 		Addr:   addr,
 		Port:   port,
