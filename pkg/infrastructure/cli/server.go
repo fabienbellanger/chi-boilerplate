@@ -33,7 +33,7 @@ func startServer() {
 		log.Fatalln(err)
 	}
 
-	l, err := logger.InitLogger()
+	l, err := logger.NewZapLogger()
 	if err != nil {
 		log.Fatalln(err)
 	}
