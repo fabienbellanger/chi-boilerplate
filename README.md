@@ -202,7 +202,6 @@ rm keys/private.ec.key
 - [ ] Add `RealIP` middleware
 - [ ] Add `ContentCharset` middleware
 - [ ] Add `Http Rate Limiting Middleware` middleware
-- [ ] Change / improve logger middleware
 - [ ] Add unit tests for domain and infrastructure
 - [ ] Add scope to JWT
 - [ ] Add Docker support
@@ -214,3 +213,4 @@ rm keys/private.ec.key
 - [x] Add `CORS` middleware
 - [x] Add OpenAPI doc with BasicAuth support
 - [x] Add JWT / Auth middleware
+- [x] Change / improve logger middleware

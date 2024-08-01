@@ -1,10 +1,15 @@
 package chi_router
 
 import (
+	"chi_boilerplate/pkg/infrastructure/chi_router/handlers"
 	"chi_boilerplate/utils"
-	"github.com/lestrrat-go/jwx/v2/jwt"
+	"context"
+	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/lestrrat-go/jwx/v2/jwt"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -30,7 +35,8 @@ func (s *ChiServer) initJWTToken() error {
 }
 
 func (s *ChiServer) initMiddlewares(r *chi.Mux) {
-	r.Use(middleware.RequestID)
+	r.Use(s.requestID)
+
 	if viper.GetBool("ENABLE_ACCESS_LOG") {
 		r.Use(s.initAccessLogger())
 	}
@@ -50,13 +56,13 @@ func (s *ChiServer) initAccessLogger() func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now().UTC()
-
+			requestId := fmt.Sprintf("%s", r.Context().Value(handlers.RequestIDKey("request_id")))
 			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
 
 			next.ServeHTTP(ww, r)
 
 			stop := time.Since(start)
-			url := r.Host + r.RequestURI // TODO: Do better, missing https/http
+			url := r.Host + r.RequestURI // TODO: Do better, missing https:// or http://
 			fields := []zapcore.Field{
 				zap.Int("code", ww.Status()),
 				zap.String("method", r.Method),
@@ -65,7 +71,7 @@ func (s *ChiServer) initAccessLogger() func(next http.Handler) http.Handler {
 				zap.String("ip", r.RemoteAddr), // TODO: Remove port
 				zap.String("userAgent", r.UserAgent()),
 				zap.String("latency", stop.String()),
-				// zap.String("requestId", fmt.Sprintf("%s", c.Locals("requestid"))),
+				zap.String("request_id", requestId),
 			}
 
 			s.Logger.Info("", fields...)
@@ -117,4 +123,17 @@ func (s *ChiServer) jwtAuthenticator(ja *jwtauth.JWTAuth) func(http.Handler) htt
 		}
 		return http.HandlerFunc(hfn)
 	}
+}
+
+func (s *ChiServer) requestID(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		id := uuid.New().String()
+
+		ctx := context.WithValue(r.Context(), handlers.RequestIDKey("request_id"), id)
+
+		w.Header().Add("X-Request-Id", id)
+
+		next.ServeHTTP(w, r.WithContext(ctx))
+
+	})
 }

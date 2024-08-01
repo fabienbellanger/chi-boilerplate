@@ -52,7 +52,7 @@ type errorLog struct {
 	URL         string    `json:"url"`
 	Host        string    `json:"host"`
 	IP          string    `json:"ip"`
-	RequestID   string    `json:"requestId"`
+	RequestID   string    `json:"request_id"`
 	Latency     string    `json:"latency"`
 	UserAgent   string    `json:"userAgent"`
 }
