@@ -98,14 +98,15 @@ func (s *ChiServer) routes(r *chi.Mux) {
 
 		// Version 1
 		a.Route("/v1", func(v1 chi.Router) {
+			// User use case
+			userRepo := sqlx_mysql.NewUserMysqlRepository(s.DB)
+			userService := services.NewUser(userRepo)
+			userUseCase := usecases.NewUser(userService)
+
 			// Public routes
 			v1.Group(func(v1 chi.Router) {
 				// User routes
 				v1.Route("/", func(u chi.Router) {
-					userRepo := sqlx_mysql.NewUserMysqlRepository(s.DB)
-					userService := services.NewUser(userRepo)
-					userUseCase := usecases.NewUser(userService)
-
 					h := api.NewUser(u, s.Logger, userUseCase)
 					h.UserPublicRoutes()
 				})
@@ -117,10 +118,6 @@ func (s *ChiServer) routes(r *chi.Mux) {
 
 				// User routes
 				v1.Route("/users", func(u chi.Router) {
-					userRepo := sqlx_mysql.NewUserMysqlRepository(s.DB)
-					userService := services.NewUser(userRepo)
-					userUseCase := usecases.NewUser(userService)
-
 					h := api.NewUser(u, s.Logger, userUseCase)
 					h.UserProtectedRoutes()
 				})
