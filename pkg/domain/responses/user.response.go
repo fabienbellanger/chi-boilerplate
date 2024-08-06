@@ -6,6 +6,24 @@ import (
 	"time"
 )
 
+// UsersListPaginated response
+type UsersListPaginated struct {
+	Data  []entities.User `json:"data"`
+	Total int64           `json:"total"`
+}
+
+// UserHTTP HTTP response
+type UserHTTP struct {
+	ID        string `json:"id" xml:"id"`
+	Email     string `json:"email" xml:"email"`
+	Lastname  string `json:"lastname" xml:"lastname"`
+	Firstname string `json:"firstname" xml:"firstname"`
+	CreatedAt string `json:"created_at" xml:"created_at"`
+	UpdatedAt string `json:"updated_at" xml:"updated_at"`
+}
+
+// ======== Login ========
+
 // UserLogin login response
 type UserLogin struct {
 	ID        entities.UserID `json:"id" xml:"id"`
@@ -27,7 +45,6 @@ type UserLoginRepository struct {
 }
 
 // ToUser converts UserLoginRepository to User
-// TODO: Add tests
 func (ulr *UserLoginRepository) ToUser() (entities.User, error) {
 	email, err := vo.NewEmail(ulr.Email)
 	if err != nil {
@@ -48,18 +65,60 @@ func (ulr *UserLoginRepository) ToUser() (entities.User, error) {
 	}, nil
 }
 
-// UserCreation login response
+// ======== User creation ========
+
+// UserCreation response to create a user
 type UserCreation struct {
 	ID        entities.UserID `json:"id" xml:"id"`
-	Email     string          `json:"email" xml:"email"`
+	Email     vo.Email        `json:"email" xml:"email"`
 	Lastname  string          `json:"lastname" xml:"lastname"`
 	Firstname string          `json:"firstname" xml:"firstname"`
 	CreatedAt time.Time       `json:"created_at" xml:"created_at"`
 	UpdatedAt time.Time       `json:"updated_at" xml:"updated_at"`
 }
 
-// UsersListPaginated response
-type UsersListPaginated struct {
-	Data  []entities.User `json:"data"`
-	Total int64           `json:"total"`
+// ToUserHTTP converts UserCreation to UserHTTP
+func (u *UserCreation) ToUserHTTP() UserHTTP {
+	return UserHTTP{
+		ID:        u.ID.String(),
+		Email:     u.Email.String(),
+		Lastname:  u.Lastname,
+		Firstname: u.Firstname,
+		CreatedAt: u.CreatedAt.Format(time.RFC3339),
+		UpdatedAt: u.UpdatedAt.Format(time.RFC3339),
+	}
+}
+
+// ======== Get one user ========
+
+// UserByIDRepository request to get a user by ID
+type UserByIdRepository struct {
+	ID        string
+	Email     string
+	Lastname  string
+	Firstname string
+	CreatedAt string
+	UpdatedAt string
+}
+
+// UserByID request to get a user by ID
+type UserById struct {
+	ID        entities.UserID `json:"id" xml:"id"`
+	Email     vo.Email        `json:"email" xml:"email"`
+	Lastname  string          `json:"lastname" xml:"lastname"`
+	Firstname string          `json:"firstname" xml:"firstname"`
+	CreatedAt time.Time       `json:"created_at" xml:"created_at"`
+	UpdatedAt time.Time       `json:"updated_at" xml:"updated_at"`
+}
+
+// ToUserHTTP converts UserById to UserHTTP
+func (u *UserById) ToUserHTTP() UserHTTP {
+	return UserHTTP{
+		ID:        u.ID.String(),
+		Email:     u.Email.String(),
+		Lastname:  u.Lastname,
+		Firstname: u.Firstname,
+		CreatedAt: u.CreatedAt.Format(time.RFC3339),
+		UpdatedAt: u.UpdatedAt.Format(time.RFC3339),
+	}
 }

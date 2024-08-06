@@ -15,8 +15,8 @@ var (
 type UserRepository interface {
 	Login(req requests.UserLogin) (responses.UserLoginRepository, error)
 	Create(req requests.UserCreationRepository) error
+	GetByID(req requests.UserByID) (responses.UserByIdRepository, error)
 	// GetAll(page, limit, sorts string) (users []entities.User, total int64, err error)
-	// GetByID(id string) (entities.User, error)
 	// GetByEmail(email string) (entities.User, error)
 	// Delete(id string) error
 	// Update(user *entities.User) error

@@ -5,6 +5,7 @@ import (
 	"chi_boilerplate/pkg/domain/repositories"
 	"chi_boilerplate/pkg/domain/requests"
 	"chi_boilerplate/pkg/domain/responses"
+	values_objects "chi_boilerplate/pkg/domain/value_objects"
 	"chi_boilerplate/utils"
 	"errors"
 	"time"
@@ -17,8 +18,8 @@ import (
 type UserService interface {
 	Login(req requests.UserLogin) (responses.UserLogin, *utils.HTTPError)
 	Create(req requests.UserCreation) (responses.UserCreation, *utils.HTTPError)
+	GetByID(id requests.UserByID) (responses.UserById, *utils.HTTPError)
 	// GetAll(req requests.Pagination) (responses.UsersListPaginated, *utils.HTTPError)
-	// GetByID(id requests.UserByID) (entities.User, *utils.HTTPError)
 	// Delete(id requests.UserByID) *utils.HTTPError
 	// Update(req requests.UserUpdate) (entities.User, *utils.HTTPError)
 }
@@ -99,13 +100,59 @@ func (us *userService) Create(req requests.UserCreation) (responses.UserCreation
 	if err := us.userRepository.Create(user); err != nil {
 		return responses.UserCreation{}, utils.NewHTTPError(utils.StatusInternalServerError, "Database error", "Error during user creation", err)
 	}
+	email, err := values_objects.NewEmail(user.Email)
+	if err != nil {
+		return responses.UserCreation{}, utils.NewHTTPError(utils.StatusInternalServerError, "Internal server error", "Error when getting user ", err)
+	}
 
 	return responses.UserCreation{
 		ID:        userID,
+		Email:     email,
 		Lastname:  user.Lastname,
 		Firstname: user.Firstname,
-		Email:     user.Email,
 		CreatedAt: now,
 		UpdatedAt: now,
 	}, nil
+}
+
+// GetByID user
+func (us *userService) GetByID(req requests.UserByID) (responses.UserById, *utils.HTTPError) {
+	reqErrors := utils.ValidateStruct(req)
+	if reqErrors != nil {
+		return responses.UserById{}, utils.NewHTTPError(utils.StatusBadRequest, "Invalid body", reqErrors, nil)
+	}
+
+	userRepo, err := us.userRepository.GetByID(requests.UserByID{ID: req.ID})
+	if err != nil {
+		var e *utils.HTTPError
+		if errors.Is(err, repositories.ErrUserNotFound) {
+			e = utils.NewHTTPError(utils.StatusNotFound, "User not found", nil, nil)
+		} else {
+			e = utils.NewHTTPError(utils.StatusInternalServerError, "Internal server error", "Error when getting user ", err)
+		}
+		return responses.UserById{}, e
+	}
+
+	email, err := values_objects.NewEmail(userRepo.Email)
+	if err != nil {
+		return responses.UserById{}, utils.NewHTTPError(utils.StatusInternalServerError, "Internal server error", "Error when getting user ", err)
+	}
+	createdAt, err := time.Parse(time.RFC3339, userRepo.CreatedAt)
+	if err != nil {
+		return responses.UserById{}, utils.NewHTTPError(utils.StatusInternalServerError, "Internal server error", "Error when getting user ", err)
+	}
+	updatedAt, err := time.Parse(time.RFC3339, userRepo.UpdatedAt)
+	if err != nil {
+		return responses.UserById{}, utils.NewHTTPError(utils.StatusInternalServerError, "Internal server error", "Error when getting user ", err)
+	}
+	user := responses.UserById{
+		ID:        uuid.MustParse(userRepo.ID),
+		Email:     email,
+		Lastname:  userRepo.Lastname,
+		Firstname: userRepo.Firstname,
+		CreatedAt: createdAt,
+		UpdatedAt: updatedAt,
+	}
+
+	return user, nil
 }

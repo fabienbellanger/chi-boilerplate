@@ -27,6 +27,7 @@ func (u *UserMysqlRepository) Login(req requests.UserLogin) (responses.UserLogin
 		SELECT id, email, lastname, firstname, created_at AS createdat
 		FROM users 
 		WHERE email = ? AND password = ?
+			AND deleted_at IS NULL
 		LIMIT 1`,
 		req.Email,
 		req.Password,
@@ -57,4 +58,22 @@ func (u *UserMysqlRepository) Create(user requests.UserCreationRepository) error
 	}
 
 	return nil
+}
+
+// GetByID returns a user by ID
+func (u *UserMysqlRepository) GetByID(req requests.UserByID) (responses.UserByIdRepository, error) {
+	var user responses.UserByIdRepository
+	row := u.db.QueryRowx(`
+		SELECT id, email, lastname, firstname, created_at AS createdat, updated_at AS updatedat
+		FROM users 
+		WHERE id = ?
+			AND deleted_at IS NULL
+		LIMIT 1`,
+		req.ID,
+	)
+	if err := row.StructScan(&user); err != nil {
+		return user, repositories.ErrUserNotFound
+	}
+
+	return user, nil
 }

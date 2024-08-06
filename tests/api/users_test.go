@@ -95,3 +95,35 @@ func TestUserCreation(t *testing.T) {
 
 	tdb.Execute(t, useCases, "../../templates")
 }
+
+func TestUserByID(t *testing.T) {
+	tdb := helpers.InitMySQL("../../.env", "../../migrations")
+	defer tdb.Drop()
+
+	useCases := []helpers.Test{
+		{
+			Description: "Get user by ID",
+			Route:       "/api/v1/users/" + helpers.UserID,
+			Method:      "GET",
+			Headers: []helpers.Header{
+				{Key: "Content-Type", Value: "application/json; charset=utf-8"},
+				{Key: "Authorization", Value: "Bearer " + tdb.Token},
+			},
+			CheckCode:    true,
+			ExpectedCode: 200,
+		},
+		{
+			Description: "Get user by ID with unknown user ID",
+			Route:       "/api/v1/users/f47ac10b-58cc-0372-8562-0b8e853961b3",
+			Method:      "GET",
+			Headers: []helpers.Header{
+				{Key: "Content-Type", Value: "application/json; charset=utf-8"},
+				{Key: "Authorization", Value: "Bearer " + tdb.Token},
+			},
+			CheckCode:    true,
+			ExpectedCode: 404,
+		},
+	}
+
+	tdb.Execute(t, useCases, "../../templates")
+}

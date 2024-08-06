@@ -36,6 +36,7 @@ func (u *User) UserPublicRoutes() {
 // UserProtectedRoutes adds users protected routes
 func (u *User) UserProtectedRoutes() {
 	u.router.Post("/", handlers.WrapError(u.create, u.logger))
+	u.router.Get("/{id}", handlers.WrapError(u.getByID, u.logger))
 }
 
 func (u *User) login(w http.ResponseWriter, r *http.Request) error {
@@ -63,5 +64,19 @@ func (u *User) create(w http.ResponseWriter, r *http.Request) error {
 		return err.SendError(w)
 	}
 
-	return utils.JSON(w, res)
+	return utils.JSON(w, res.ToUserHTTP())
+}
+
+func (u *User) getByID(w http.ResponseWriter, r *http.Request) error {
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		return utils.Err400(w, nil, "ID is required", nil)
+	}
+
+	res, err := u.userUseCase.GetByID(requests.UserByID{ID: id})
+	if err != nil {
+		return err.SendError(w)
+	}
+
+	return utils.JSON(w, res.ToUserHTTP())
 }

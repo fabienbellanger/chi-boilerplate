@@ -161,7 +161,7 @@ func runMySQLMigrations(m string, db *db.MySQL) error {
 func createMySQLUserAndAuthenticate(db *db.MySQL) (token string, err error) {
 	// Create first user
 	now := time.Now()
-	userID := uuid.New()
+	userID := uuid.MustParse(UserID)
 	userRepo := sqlx_mysql.NewUserMysqlRepository(db)
 	err = userRepo.Create(requests.UserCreationRepository{
 		ID:        userID.String(),

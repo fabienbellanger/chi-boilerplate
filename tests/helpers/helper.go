@@ -11,6 +11,7 @@ import (
 )
 
 const (
+	UserID       = "f47ac10b-58cc-0372-8562-0b8e853961a1"
 	UserEmail    = "test@test.com"
 	UserPassword = "00000000"
 )
