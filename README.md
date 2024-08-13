@@ -84,7 +84,7 @@ WantedBy=multi-user.target
 
 ## Database migrations
 
-Install  [golang-migrate](https://github.com/golang-migrate/migrate)
+Install [golang-migrate](https://github.com/golang-migrate/migrate)
 
 ### Create a migration
 ```bash
