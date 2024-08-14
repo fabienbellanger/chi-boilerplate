@@ -231,6 +231,13 @@ func TestOrderValues(t *testing.T) {
 				sort: "",
 			},
 		},
+		{
+			name: "With empty last field",
+			args: []string{"-id,+name,"},
+			wanted: result{
+				sort: " ORDER BY id DESC, name ASC",
+			},
+		},
 	}
 
 	for _, tt := range tests {
