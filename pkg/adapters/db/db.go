@@ -3,6 +3,8 @@ package db
 import (
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -48,5 +50,63 @@ func (c *Config) dsn() (dsn string, err error) {
 	if c.Location != "" {
 		dsn += fmt.Sprintf("&loc=%s", c.Location)
 	}
+	return
+}
+
+// PaginateValues transforms page and limit into offset and limit.
+func PaginateValues(p, l string) (offset int, limit int) {
+	page, err := strconv.Atoi(p)
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	limit, err = strconv.Atoi(l)
+	if err != nil || limit > MaxLimit || limit < 1 {
+		limit = MaxLimit
+	}
+
+	offset = (page - 1) * limit
+
+	return
+}
+
+// OrderValues returns the ORDER BY clause for a list of fields to sort.
+func OrderValues(list string, prefixes ...string) (s string) {
+	if len(list) <= 0 {
+		return
+	}
+
+	prefix := ""
+	if len(prefixes) == 1 {
+		prefix = prefixes[0] + "."
+	}
+
+	i := 0
+	for _, sort := range strings.Split(list, ",") {
+		if len(sort) > 0 {
+			key := fmt.Sprintf("%s%s", prefix, sort[1:])
+
+			var ord string
+			if strings.HasPrefix(sort, "+") && len(sort[1:]) > 1 {
+				ord = " " + key + " ASC"
+			} else if strings.HasPrefix(sort, "-") && len(sort[1:]) > 1 {
+				ord = " " + key + " DESC"
+			}
+
+			if len(ord) > 0 {
+				if i > 0 {
+					s += ","
+				}
+				s += ord
+
+				i++
+			}
+		}
+	}
+
+	if len(s) > 0 {
+		s = " ORDER BY" + s
+	}
+
 	return
 }

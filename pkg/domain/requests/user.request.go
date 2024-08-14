@@ -43,3 +43,6 @@ type UserCreationRepository struct {
 type UserDelete struct {
 	ID string `json:"id" xml:"id" form:"id" validate:"required,uuid"`
 }
+
+// UsersList request
+type UsersList Pagination

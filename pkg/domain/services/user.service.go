@@ -19,9 +19,9 @@ type UserService interface {
 	Login(requests.UserLogin) (responses.UserLogin, *utils.HTTPError)
 	Create(requests.UserCreation) (responses.UserCreation, *utils.HTTPError)
 	GetByID(requests.UserByID) (responses.UserById, *utils.HTTPError)
-	// GetAll(req requests.Pagination) (responses.UsersListPaginated, *utils.HTTPError)
+	GetAll(requests.UsersList) (responses.UsersList, *utils.HTTPError)
 	Delete(requests.UserDelete) *utils.HTTPError
-	// Update(req requests.UserUpdate) (entities.User, *utils.HTTPError)
+	// Update(requests.UserUpdate) (entities.User, *utils.HTTPError)
 }
 
 type userService struct {
@@ -176,4 +176,22 @@ func (us *userService) Delete(req requests.UserDelete) *utils.HTTPError {
 	}
 
 	return nil
+}
+
+// GetAll returns all users with pagination
+func (us *userService) GetAll(req requests.UsersList) (responses.UsersList, *utils.HTTPError) {
+	var list responses.UsersList
+	users, err := us.userRepository.GetAll(req)
+	if err != nil {
+		return responses.UsersList{}, utils.NewHTTPError(utils.StatusInternalServerError, "Internal server error", "Error when getting all users", err)
+	}
+	list.Data = users
+
+	total, err := us.userRepository.CountAll()
+	if err != nil {
+		return responses.UsersList{}, utils.NewHTTPError(utils.StatusInternalServerError, "Internal server error", "Error when getting all users", err)
+	}
+	list.Total = total
+
+	return list, nil
 }

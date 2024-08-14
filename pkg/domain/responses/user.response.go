@@ -122,3 +122,17 @@ func (u *UserById) ToUserHTTP() UserHTTP {
 		UpdatedAt: u.UpdatedAt.Format(time.RFC3339),
 	}
 }
+
+// ======== Get all users ========
+
+type UsersList Pagination[UsersListModel]
+
+// UsersListModel request a user by ID
+type UsersListModel struct {
+	ID        string `json:"id" xml:"id"`
+	Email     string `json:"email" xml:"email"`
+	Lastname  string `json:"lastname" xml:"lastname"`
+	Firstname string `json:"firstname" xml:"firstname"`
+	CreatedAt string `json:"created_at" xml:"created_at"`
+	UpdatedAt string `json:"updated_at" xml:"updated_at"`
+}

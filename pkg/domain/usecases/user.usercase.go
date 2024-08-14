@@ -12,7 +12,7 @@ type User interface {
 	Login(requests.UserLogin) (responses.UserLogin, *utils.HTTPError)
 	Create(requests.UserCreation) (responses.UserCreation, *utils.HTTPError)
 	GetByID(requests.UserByID) (responses.UserById, *utils.HTTPError)
-	// GetAll(requests.Pagination) (responses.UsersListPaginated, *utils.HTTPError)
+	GetAll(requests.UsersList) (responses.UsersList, *utils.HTTPError)
 	Delete(requests.UserDelete) *utils.HTTPError
 	// Update(requests.UserUpdate) (entities.User, *utils.HTTPError)
 }
@@ -41,10 +41,10 @@ func (uc *userUseCase) GetByID(id requests.UserByID) (responses.UserById, *utils
 	return uc.userService.GetByID(id)
 }
 
-// // GetAll users
-// func (uc *userUseCase) GetAll(req requests.Pagination) (responses.UsersListPaginated, *utils.HTTPError) {
-// 	return uc.userService.GetAll(req)
-// }
+// GetAll users
+func (uc *userUseCase) GetAll(req requests.UsersList) (responses.UsersList, *utils.HTTPError) {
+	return uc.userService.GetAll(req)
+}
 
 // Delete user
 func (uc *userUseCase) Delete(req requests.UserDelete) *utils.HTTPError {

@@ -37,6 +37,7 @@ func (u *User) UserPublicRoutes() {
 func (u *User) UserProtectedRoutes() {
 	u.router.Post("/", handlers.WrapError(u.create, u.logger))
 	u.router.Get("/{id}", handlers.WrapError(u.getByID, u.logger))
+	u.router.Get("/", handlers.WrapError(u.getAll, u.logger))
 	u.router.Delete("/{id}", handlers.WrapError(u.delete, u.logger))
 }
 
@@ -94,4 +95,17 @@ func (u *User) delete(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	return utils.NoContent(w)
+}
+
+func (u *User) getAll(w http.ResponseWriter, r *http.Request) error {
+	page := r.URL.Query().Get("p")
+	limit := r.URL.Query().Get("l")
+	sorts := r.URL.Query().Get("s")
+
+	users, err := u.userUseCase.GetAll(requests.UsersList{Page: page, Limit: limit, Sorts: sorts})
+	if err != nil {
+		return err.SendError(w)
+	}
+
+	return utils.JSON(w, users)
 }

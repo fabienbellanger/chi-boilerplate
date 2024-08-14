@@ -97,3 +97,48 @@ func (u *UserMysqlRepository) Delete(req requests.UserDelete) error {
 
 	return err
 }
+
+func (u *UserMysqlRepository) CountAll() (int64, error) {
+	var count int64
+	row := u.db.QueryRowx(`
+		SELECT COUNT(id)
+		FROM users 
+		WHERE deleted_at IS NULL
+	`)
+	if err := row.Scan(&count); err != nil {
+		return count, err
+	}
+
+	return count, nil
+}
+
+func (u *UserMysqlRepository) GetAll(req requests.UsersList) ([]responses.UsersListModel, error) {
+	offset, limit := db.PaginateValues(req.Page, req.Limit)
+	query_sort := db.OrderValues(req.Sorts)
+
+	query := `
+		SELECT id, email, lastname, firstname, created_at AS createdat, updated_at AS updatedat
+		FROM users 
+		WHERE deleted_at IS NULL`
+
+	if len(query_sort) > 0 {
+		query += query_sort
+	}
+	query += " LIMIT ? OFFSET ?"
+
+	rows, err := u.db.Queryx(query, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	var users []responses.UsersListModel
+	for rows.Next() {
+		var user responses.UsersListModel
+		if err := rows.StructScan(&user); err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	return users, nil
+}
