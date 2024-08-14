@@ -37,7 +37,7 @@ func NewUser(repo repositories.UserRepository) UserService {
 func (us *userService) Login(req requests.UserLogin) (responses.UserLogin, *utils.HTTPError) {
 	loginErrors := utils.ValidateStruct(req)
 	if loginErrors != nil {
-		return responses.UserLogin{}, utils.NewHTTPError(utils.StatusBadRequest, "Invalid body", loginErrors, nil)
+		return responses.UserLogin{}, utils.NewHTTPError(utils.StatusBadRequest, "Invalid request data", loginErrors, nil)
 	}
 
 	hashedPassword := entities.HashUserPassword(req.Password)
@@ -82,7 +82,7 @@ func (us *userService) Login(req requests.UserLogin) (responses.UserLogin, *util
 func (us *userService) Create(req requests.UserCreation) (responses.UserCreation, *utils.HTTPError) {
 	creationErrors := utils.ValidateStruct(req)
 	if creationErrors != nil {
-		return responses.UserCreation{}, utils.NewHTTPError(utils.StatusBadRequest, "Invalid body", creationErrors, nil)
+		return responses.UserCreation{}, utils.NewHTTPError(utils.StatusBadRequest, "Invalid request data", creationErrors, nil)
 	}
 
 	now := time.Now()
@@ -119,7 +119,7 @@ func (us *userService) Create(req requests.UserCreation) (responses.UserCreation
 func (us *userService) GetByID(req requests.UserByID) (responses.UserById, *utils.HTTPError) {
 	reqErrors := utils.ValidateStruct(req)
 	if reqErrors != nil {
-		return responses.UserById{}, utils.NewHTTPError(utils.StatusBadRequest, "Invalid body", reqErrors, nil)
+		return responses.UserById{}, utils.NewHTTPError(utils.StatusBadRequest, "Invalid request data", reqErrors, nil)
 	}
 
 	userRepo, err := us.userRepository.GetByID(requests.UserByID{ID: req.ID})

@@ -70,7 +70,7 @@ func TestUserCreation(t *testing.T) {
 			CheckCode:    true,
 			CheckBody:    true,
 			ExpectedCode: 400,
-			ExpectedBody: `{"code":400,"message":"Invalid body","details":[{"FailedField":"Password","Tag":"min","Value":"8"}]}`,
+			ExpectedBody: `{"code":400,"message":"Invalid request data","details":[{"FailedField":"Password","Tag":"min","Value":"8"}]}`,
 		},
 		{
 			Description: "User creation with invalid email",
@@ -89,7 +89,7 @@ func TestUserCreation(t *testing.T) {
 			CheckCode:    true,
 			CheckBody:    true,
 			ExpectedCode: 400,
-			ExpectedBody: `{"code":400,"message":"Invalid body","details":[{"FailedField":"Email","Tag":"email","Value":""}]}`,
+			ExpectedBody: `{"code":400,"message":"Invalid request data","details":[{"FailedField":"Email","Tag":"email","Value":""}]}`,
 		},
 	}
 
