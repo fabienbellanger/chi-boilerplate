@@ -38,3 +38,8 @@ type UserCreationRepository struct {
 	CreatedAt string
 	UpdatedAt string
 }
+
+// UserDelete request
+type UserDelete struct {
+	ID string `json:"id" xml:"id" form:"id" validate:"required,uuid"`
+}

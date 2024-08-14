@@ -16,11 +16,11 @@ import (
 
 // UserService is an interface for user service
 type UserService interface {
-	Login(req requests.UserLogin) (responses.UserLogin, *utils.HTTPError)
-	Create(req requests.UserCreation) (responses.UserCreation, *utils.HTTPError)
-	GetByID(id requests.UserByID) (responses.UserById, *utils.HTTPError)
+	Login(requests.UserLogin) (responses.UserLogin, *utils.HTTPError)
+	Create(requests.UserCreation) (responses.UserCreation, *utils.HTTPError)
+	GetByID(requests.UserByID) (responses.UserById, *utils.HTTPError)
 	// GetAll(req requests.Pagination) (responses.UsersListPaginated, *utils.HTTPError)
-	// Delete(id requests.UserByID) *utils.HTTPError
+	Delete(requests.UserDelete) *utils.HTTPError
 	// Update(req requests.UserUpdate) (entities.User, *utils.HTTPError)
 }
 
@@ -155,4 +155,25 @@ func (us *userService) GetByID(req requests.UserByID) (responses.UserById, *util
 	}
 
 	return user, nil
+}
+
+// Delete user
+func (us *userService) Delete(req requests.UserDelete) *utils.HTTPError {
+	reqErrors := utils.ValidateStruct(req)
+	if reqErrors != nil {
+		return utils.NewHTTPError(utils.StatusBadRequest, "Invalid request data", reqErrors, nil)
+	}
+
+	err := us.userRepository.Delete(requests.UserDelete{ID: req.ID})
+	if err != nil {
+		var e *utils.HTTPError
+		if errors.Is(err, repositories.ErrUserNotFound) {
+			e = utils.NewHTTPError(utils.StatusNotFound, "User not found", nil, nil)
+		} else {
+			e = utils.NewHTTPError(utils.StatusInternalServerError, "Internal server error", "Error when getting user ", err)
+		}
+		return e
+	}
+
+	return nil
 }

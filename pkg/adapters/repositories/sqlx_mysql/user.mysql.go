@@ -77,3 +77,23 @@ func (u *UserMysqlRepository) GetByID(req requests.UserByID) (responses.UserById
 
 	return user, nil
 }
+
+// Delete deletes a user
+func (u *UserMysqlRepository) Delete(req requests.UserDelete) error {
+	result, err := u.db.Exec(`
+		UPDATE users
+		SET deleted_at = NOW()
+		WHERE id = ?
+			AND deleted_at IS NULL`,
+		req.ID,
+	)
+	if err != nil {
+		return err
+	}
+	affected, err := result.RowsAffected()
+	if err := affected; err == 0 {
+		return repositories.ErrUserNotFound
+	}
+
+	return err
+}

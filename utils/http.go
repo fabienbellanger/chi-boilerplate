@@ -127,3 +127,9 @@ func JSON(w http.ResponseWriter, data interface{}) error {
 
 	return nil
 }
+
+func NoContent(w http.ResponseWriter) error {
+	w.WriteHeader(http.StatusNoContent)
+
+	return nil
+}
