@@ -198,9 +198,6 @@ rm keys/private.ec.key
 
 ## TODO
 
-- [ ] Add `Timeout` middleware
-- [ ] Add `RealIP` middleware
-- [ ] Add `ContentCharset` middleware
 - [ ] Add `Http Rate Limiting Middleware` middleware
 - [ ] Add scope to JWT
 - [ ] Add Docker support
@@ -209,6 +206,8 @@ rm keys/private.ec.key
   - [ ] Add Prometheus metrics ([Example](https://github.com/stefanprodan/dockprom))
   - [ ] Create a first user to use API
 - [ ] Try test suite [ginkgo](https://github.com/onsi/ginkgo) and [gomega](https://github.com/onsi/gomega)
+- [x] Add `Timeout` middleware
+- [x] Add `RealIP` middleware
 - [x] Add `CORS` middleware
 - [x] Add OpenAPI doc with BasicAuth support
 - [x] Add JWT / Auth middleware

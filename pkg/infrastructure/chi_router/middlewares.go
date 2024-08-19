@@ -39,6 +39,8 @@ func (s *ChiServer) initMiddlewares(r *chi.Mux) {
 		r.Use(s.initAccessLogger())
 	}
 	r.Use(middleware.Recoverer)
+	r.Use(middleware.Timeout(viper.GetDuration("SERVER_TIMEOUT") * time.Second))
+	r.Use(middleware.RealIP)
 
 	// Profiler
 	if viper.GetBool("SERVER_PPROF") {
