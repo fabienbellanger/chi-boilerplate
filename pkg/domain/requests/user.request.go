@@ -39,6 +39,16 @@ type UserCreationRepository struct {
 	UpdatedAt string
 }
 
+// UserUpdateRepository request to update a user
+type UserUpdateRepository struct {
+	ID        string
+	Email     string
+	Password  string
+	Lastname  string
+	Firstname string
+	UpdatedAt string
+}
+
 // UserDelete request
 type UserDelete struct {
 	ID string `json:"id" xml:"id" form:"id" validate:"required,uuid"`

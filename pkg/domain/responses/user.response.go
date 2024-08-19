@@ -30,9 +30,10 @@ type UserLogin struct {
 	Email     string          `json:"email" xml:"email"`
 	Lastname  string          `json:"lastname" xml:"lastname"`
 	Firstname string          `json:"firstname" xml:"firstname"`
-	CreatedAt string          `json:"created_at" xml:"created_at"`
 	Token     string          `json:"token" xml:"token"`
 	ExpiresAt string          `json:"expires_at" xml:"expires_at"`
+	CreatedAt string          `json:"created_at" xml:"created_at"`
+	UpdatedAt string          `json:"updated_at" xml:"updated_at"`
 }
 
 // UserLoginRepository repository login response
@@ -42,6 +43,7 @@ type UserLoginRepository struct {
 	Lastname  string
 	Firstname string
 	CreatedAt string
+	UpdatedAt string
 }
 
 // ToUser converts UserLoginRepository to User
@@ -56,12 +58,18 @@ func (ulr *UserLoginRepository) ToUser() (entities.User, error) {
 		return entities.User{}, err
 	}
 
+	updatedAt, err := time.Parse(time.RFC3339, ulr.UpdatedAt)
+	if err != nil {
+		return entities.User{}, err
+	}
+
 	return entities.User{
 		ID:        ulr.ID,
 		Email:     email,
 		Lastname:  ulr.Lastname,
 		Firstname: ulr.Firstname,
 		CreatedAt: createdAt,
+		UpdatedAt: updatedAt,
 	}, nil
 }
 

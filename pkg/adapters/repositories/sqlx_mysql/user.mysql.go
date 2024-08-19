@@ -24,7 +24,7 @@ func NewUserMysqlRepository(db *db.MySQL) *UserMysqlRepository {
 func (u *UserMysqlRepository) Login(req requests.UserLogin) (responses.UserLoginRepository, error) {
 	var user responses.UserLoginRepository
 	row := u.db.QueryRowx(`
-		SELECT id, email, lastname, firstname, created_at AS createdat
+		SELECT id, email, lastname, firstname, created_at AS createdat, updated_at AS updatedat
 		FROM users 
 		WHERE email = ? AND password = ?
 			AND deleted_at IS NULL
@@ -90,8 +90,12 @@ func (u *UserMysqlRepository) Delete(req requests.UserDelete) error {
 	if err != nil {
 		return err
 	}
+
 	affected, err := result.RowsAffected()
-	if err := affected; err == 0 {
+	if err != nil {
+		return err
+	}
+	if affected == 0 {
 		return repositories.ErrUserNotFound
 	}
 
@@ -141,4 +145,32 @@ func (u *UserMysqlRepository) GetAll(req requests.UsersList) ([]responses.UsersL
 	}
 
 	return users, nil
+}
+
+func (u *UserMysqlRepository) Update(req requests.UserUpdateRepository) error {
+	result, err := u.db.Exec(`
+		UPDATE users
+		SET lastname = ?, firstname = ?, email = ?, password = ?, updated_at = ?
+		WHERE id = ?
+			AND deleted_at IS NULL`,
+		req.Lastname,
+		req.Firstname,
+		req.Email,
+		req.Password,
+		req.UpdatedAt,
+		req.ID,
+	)
+	if err != nil {
+		return err
+	}
+
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if affected == 0 {
+		return repositories.ErrUserNotFound
+	}
+
+	return err
 }

@@ -21,7 +21,7 @@ type UserService interface {
 	GetByID(requests.UserByID) (responses.UserById, *utils.HTTPError)
 	GetAll(requests.UsersList) (responses.UsersList, *utils.HTTPError)
 	Delete(requests.UserDelete) *utils.HTTPError
-	// Update(requests.UserUpdate) (entities.User, *utils.HTTPError)
+	Update(requests.UserUpdate) (responses.UserById, *utils.HTTPError)
 }
 
 type userService struct {
@@ -72,9 +72,10 @@ func (us *userService) Login(req requests.UserLogin) (responses.UserLogin, *util
 		Email:     user.Email.Value,
 		Lastname:  user.Lastname,
 		Firstname: user.Firstname,
-		CreatedAt: user.CreatedAt.Format(time.RFC3339),
 		Token:     token,
 		ExpiresAt: expiresAt.Format(time.RFC3339),
+		CreatedAt: user.CreatedAt.Format(time.RFC3339),
+		UpdatedAt: user.UpdatedAt.Format(time.RFC3339),
 	}, nil
 }
 
@@ -194,4 +195,26 @@ func (us *userService) GetAll(req requests.UsersList) (responses.UsersList, *uti
 	list.Total = total
 
 	return list, nil
+}
+
+// Update user
+func (us *userService) Update(req requests.UserUpdate) (responses.UserById, *utils.HTTPError) {
+	reqErrors := utils.ValidateStruct(req)
+	if reqErrors != nil {
+		return responses.UserById{}, utils.NewHTTPError(utils.StatusBadRequest, "Invalid request data", reqErrors, nil)
+	}
+
+	err := us.userRepository.Update(requests.UserUpdateRepository{
+		ID:        req.ID,
+		Lastname:  req.Lastname,
+		Firstname: req.Firstname,
+		Email:     req.Email,
+		Password:  entities.HashUserPassword(req.Password),
+		UpdatedAt: time.Now().Format(utils.SqlDateTimeFormat),
+	})
+	if err != nil {
+		return responses.UserById{}, utils.NewHTTPError(utils.StatusInternalServerError, "Error when updating user", err, nil)
+	}
+
+	return us.GetByID(requests.UserByID{ID: req.ID})
 }

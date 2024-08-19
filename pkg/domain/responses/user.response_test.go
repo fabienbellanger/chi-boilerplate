@@ -70,6 +70,7 @@ func TestUserLoginRepository(t *testing.T) {
 		Lastname:  "Doe",
 		Firstname: "john",
 		CreatedAt: "2021-01-01T00:00:00Z",
+		UpdatedAt: "2021-01-01T00:00:00Z",
 	}
 
 	expected := entities.User{
@@ -78,6 +79,7 @@ func TestUserLoginRepository(t *testing.T) {
 		Lastname:  "Doe",
 		Firstname: "john",
 		CreatedAt: tt,
+		UpdatedAt: tt,
 	}
 	got, _ := user.ToUser()
 

@@ -14,7 +14,7 @@ type User interface {
 	GetByID(requests.UserByID) (responses.UserById, *utils.HTTPError)
 	GetAll(requests.UsersList) (responses.UsersList, *utils.HTTPError)
 	Delete(requests.UserDelete) *utils.HTTPError
-	// Update(requests.UserUpdate) (entities.User, *utils.HTTPError)
+	Update(requests.UserUpdate) (responses.UserById, *utils.HTTPError)
 }
 
 type userUseCase struct {
@@ -51,7 +51,7 @@ func (uc *userUseCase) Delete(req requests.UserDelete) *utils.HTTPError {
 	return uc.userService.Delete(req)
 }
 
-// // Update user
-// func (uc *userUseCase) Update(req requests.UserUpdate) (entities.User, *utils.HTTPError) {
-// 	return uc.userService.Update(req)
-// }
+// Update user
+func (uc *userUseCase) Update(req requests.UserUpdate) (responses.UserById, *utils.HTTPError) {
+	return uc.userService.Update(req)
+}

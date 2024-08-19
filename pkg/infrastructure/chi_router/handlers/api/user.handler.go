@@ -36,8 +36,9 @@ func (u *User) UserPublicRoutes() {
 // UserProtectedRoutes adds users protected routes
 func (u *User) UserProtectedRoutes() {
 	u.router.Post("/", handlers.WrapError(u.create, u.logger))
-	u.router.Get("/{id}", handlers.WrapError(u.getByID, u.logger))
 	u.router.Get("/", handlers.WrapError(u.getAll, u.logger))
+	u.router.Get("/{id}", handlers.WrapError(u.getByID, u.logger))
+	u.router.Put("/{id}", handlers.WrapError(u.update, u.logger))
 	u.router.Delete("/{id}", handlers.WrapError(u.delete, u.logger))
 }
 
@@ -108,4 +109,24 @@ func (u *User) getAll(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	return utils.JSON(w, users)
+}
+
+func (u *User) update(w http.ResponseWriter, r *http.Request) error {
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		return utils.Err400(w, nil, "ID is required", nil)
+	}
+
+	var body requests.UserUpdate
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		return utils.Err400(w, err, "Error decoding body", nil)
+	}
+	body.ID = id
+
+	res, err := u.userUseCase.Update(body)
+	if err != nil {
+		return err.SendError(w)
+	}
+
+	return utils.JSON(w, res.ToUserHTTP())
 }

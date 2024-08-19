@@ -18,7 +18,7 @@ type UserRepository interface {
 	GetByID(requests.UserByID) (responses.UserByIdRepository, error)
 	GetAll(requests.UsersList) ([]responses.UsersListModel, error)
 	CountAll() (int64, error)
-	// GetByEmail(email string) (entities.User, error)
 	Delete(requests.UserDelete) error
-	// Update(user *entities.User) error
+	Update(requests.UserUpdateRepository) error
+	// GetByEmail(email string) (entities.User, error)
 }

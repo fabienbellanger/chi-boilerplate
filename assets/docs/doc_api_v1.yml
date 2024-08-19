@@ -62,7 +62,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserCreationRequest'
+              $ref: '#/components/schemas/UserEditRequest'
       responses:
         '200':
           description: OK
@@ -111,6 +111,10 @@ paths:
       responses:
         '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsersListResponse'
         '400':
             $ref: "#/components/responses/BadRequest"
         '401':
@@ -137,8 +141,12 @@ paths:
           required: true
           description: User ID
       responses:
-        '204':
-          description: Deleted
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserHttpResponse'
         '400':
             $ref: "#/components/responses/BadRequest"
         '401':
@@ -162,6 +170,38 @@ paths:
             format: uuid
           required: true
           description: User ID
+      responses:
+        '204':
+          description: Deleted
+        '400':
+            $ref: "#/components/responses/BadRequest"
+        '401':
+            $ref: "#/components/responses/Unauthorized"
+        '404':
+            $ref: "#/components/responses/NotFound"
+        '500':
+            $ref: "#/components/responses/InternalServerError"
+    put:
+      summary: ""
+      description: Update a user
+      tags:
+        - "Users"
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: User ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserEditRequest'  
       responses:
         '200':
           description: OK
@@ -274,7 +314,7 @@ components:
         - token
         - created_at
         - expired_at
-    UserCreationRequest:
+    UserEditRequest:
       type: object
       properties:
         lastname:
@@ -344,3 +384,15 @@ components:
         - email
         - created_at
         - updated_at
+    UsersListResponse:
+      allOf:
+        - $ref: "#/components/schemas/PaginateTotal"
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: "#/components/schemas/UserHttpResponse"
+          required:
+            - data
+
