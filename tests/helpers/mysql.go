@@ -160,7 +160,14 @@ func runMySQLMigrations(m string, db *db.MySQL) error {
 
 func createMySQLUserAndAuthenticate(db *db.MySQL) (token string, err error) {
 	// Create first user
-	now := time.Now()
+	created_at, err := time.Parse(time.RFC3339, UserCreatedAt)
+	if err != nil {
+		return
+	}
+	updated_at, err := time.Parse(time.RFC3339, UserUpdatedAt)
+	if err != nil {
+		return
+	}
 	userID := uuid.MustParse(UserID)
 	userRepo := sqlx_mysql.NewUserMysqlRepository(db)
 	err = userRepo.Create(requests.UserCreationRepository{
@@ -169,8 +176,8 @@ func createMySQLUserAndAuthenticate(db *db.MySQL) (token string, err error) {
 		Firstname: "Test",
 		Password:  entities.HashUserPassword(UserPassword),
 		Email:     UserEmail,
-		CreatedAt: now.Format(utils.SqlDateTimeFormat),
-		UpdatedAt: now.Format(utils.SqlDateTimeFormat),
+		CreatedAt: created_at.Format(utils.SqlDateTimeFormat),
+		UpdatedAt: updated_at.Format(utils.SqlDateTimeFormat),
 	})
 	if err != nil {
 		return

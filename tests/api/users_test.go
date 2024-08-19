@@ -159,3 +159,26 @@ func TestUserDelete(t *testing.T) {
 
 	tdb.Execute(t, useCases, "../../templates")
 }
+
+func TestUserGetAll(t *testing.T) {
+	tdb := helpers.InitMySQL("../../.env", "../../migrations")
+	defer tdb.Drop()
+
+	useCases := []helpers.Test{
+		{
+			Description: "Get all users without query parameters",
+			Route:       "/api/v1/users/",
+			Method:      "GET",
+			Headers: []helpers.Header{
+				{Key: "Content-Type", Value: "application/json; charset=utf-8"},
+				{Key: "Authorization", Value: "Bearer " + tdb.Token},
+			},
+			CheckCode:    true,
+			ExpectedCode: 200,
+			CheckBody:    true,
+			ExpectedBody: `{"data":[{"id":"` + helpers.UserID + `","email":"` + helpers.UserEmail + `","lastname":"Test","firstname":"Test","created_at":"` + helpers.UserCreatedAt + `","updated_at":"` + helpers.UserUpdatedAt + `"}],"total":1}`,
+		},
+	}
+
+	tdb.Execute(t, useCases, "../../templates")
+}

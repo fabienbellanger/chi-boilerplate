@@ -11,9 +11,11 @@ import (
 )
 
 const (
-	UserID       = "f47ac10b-58cc-0372-8562-0b8e853961a1"
-	UserEmail    = "test@test.com"
-	UserPassword = "00000000"
+	UserID        = "f47ac10b-58cc-0372-8562-0b8e853961a1"
+	UserEmail     = "test@test.com"
+	UserPassword  = "00000000"
+	UserCreatedAt = "2024-08-19T09:36:18Z"
+	UserUpdatedAt = "2024-08-19T09:36:18Z"
 )
 
 // Test defines a structure for specifying input and output data of a single test case.
