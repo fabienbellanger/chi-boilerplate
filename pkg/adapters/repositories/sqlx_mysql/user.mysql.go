@@ -24,7 +24,7 @@ func NewUserMysqlRepository(db *db.MySQL) *UserMysqlRepository {
 func (u *UserMysqlRepository) Login(req requests.UserLogin) (responses.UserLoginRepository, error) {
 	var user responses.UserLoginRepository
 	row := u.db.QueryRowx(`
-		SELECT id, email, lastname, firstname, created_at AS createdat, updated_at AS updatedat
+		SELECT id, email, lastname, firstname, created_at, updated_at
 		FROM users 
 		WHERE email = ? AND password = ?
 			AND deleted_at IS NULL
@@ -64,7 +64,7 @@ func (u *UserMysqlRepository) Create(user requests.UserCreationRepository) error
 func (u *UserMysqlRepository) GetByID(req requests.UserByID) (responses.UserByIdRepository, error) {
 	var user responses.UserByIdRepository
 	row := u.db.QueryRowx(`
-		SELECT id, email, lastname, firstname, created_at AS createdat, updated_at AS updatedat
+		SELECT id, email, lastname, firstname, created_at, updated_at
 		FROM users 
 		WHERE id = ?
 			AND deleted_at IS NULL
@@ -116,12 +116,12 @@ func (u *UserMysqlRepository) CountAll() (int64, error) {
 	return count, nil
 }
 
-func (u *UserMysqlRepository) GetAll(req requests.UsersList) ([]responses.UsersListModel, error) {
+func (u *UserMysqlRepository) GetAll(req requests.UsersList) ([]responses.UsersListRepository, error) {
 	offset, limit := db.PaginateValues(req.Page, req.Limit)
 	query_sort := db.OrderValues(req.Sorts)
 
 	query := `
-		SELECT id, email, lastname, firstname, created_at AS createdat, updated_at AS updatedat
+		SELECT id, email, lastname, firstname, created_at, updated_at
 		FROM users 
 		WHERE deleted_at IS NULL`
 
@@ -134,10 +134,11 @@ func (u *UserMysqlRepository) GetAll(req requests.UsersList) ([]responses.UsersL
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
-	var users []responses.UsersListModel
+	var users []responses.UsersListRepository
 	for rows.Next() {
-		var user responses.UsersListModel
+		var user responses.UsersListRepository
 		if err := rows.StructScan(&user); err != nil {
 			return nil, err
 		}

@@ -16,7 +16,7 @@ type UserRepository interface {
 	Login(requests.UserLogin) (responses.UserLoginRepository, error)
 	Create(requests.UserCreationRepository) error
 	GetByID(requests.UserByID) (responses.UserByIdRepository, error)
-	GetAll(requests.UsersList) ([]responses.UsersListModel, error)
+	GetAll(requests.UsersList) ([]responses.UsersListRepository, error)
 	CountAll() (int64, error)
 	Delete(requests.UserDelete) error
 	Update(requests.UserUpdateRepository) error

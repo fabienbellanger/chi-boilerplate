@@ -68,14 +68,8 @@ func (us *userService) Login(req requests.UserLogin) (responses.UserLogin, *util
 	}
 
 	return responses.UserLogin{
-		ID:        user.ID,
-		Email:     user.Email.Value,
-		Lastname:  user.Lastname,
-		Firstname: user.Firstname,
-		Token:     token,
-		ExpiresAt: expiresAt.Format(time.RFC3339),
-		CreatedAt: user.CreatedAt.Format(time.RFC3339),
-		UpdatedAt: user.UpdatedAt.Format(time.RFC3339),
+		AccessToken:          token,
+		AccessTokenExpiresAt: expiresAt.Format(time.RFC3339),
 	}, nil
 }
 

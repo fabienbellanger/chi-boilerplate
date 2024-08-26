@@ -48,11 +48,7 @@ func (u *User) GenerateJWT(lifetime time.Duration, algo, secret string) (string,
 
 	// Set claims
 	claims := token.Claims.(jwt.MapClaims)
-	claims["id"] = u.ID
-	claims["email"] = u.Email.Value
-	claims["lastname"] = u.Lastname
-	claims["firstname"] = u.Firstname
-	claims["createdAt"] = u.CreatedAt
+	claims["sub"] = u.ID
 	claims["exp"] = expiresAt.Unix()
 	claims["iat"] = now.Unix()
 	claims["nbf"] = now.Unix()

@@ -198,8 +198,8 @@ rm keys/private.ec.key
 
 ## TODO
 
-- [ ] Add `Http Rate Limiting Middleware` middleware
-- [ ] Add scope to JWT
+- [ ] Add / Test `Http Rate Limiting Middleware` middleware
+- [ ] Add roles and scopes
 - [ ] Add Docker support
   - [ ] Try OpenTelemetry [middleware](https://github.com/gofiber/contrib/tree/main/otelfiber)
   - [ ] Mettre en place la stack Prometheus + Grafana pour la télémétrie

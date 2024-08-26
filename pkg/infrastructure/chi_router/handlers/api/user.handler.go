@@ -30,7 +30,7 @@ func NewUser(r chi.Router, l logger.CustomLogger, userUseCase usecases.User) Use
 
 // UserPublicRoutes adds users public routes
 func (u *User) UserPublicRoutes() {
-	u.router.Post("/login", handlers.WrapError(u.login, u.logger))
+	u.router.Post("/token", handlers.WrapError(u.login, u.logger))
 }
 
 // UserProtectedRoutes adds users protected routes

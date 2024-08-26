@@ -14,7 +14,7 @@ func TestUserLogin(t *testing.T) {
 	useCases := []helpers.Test{
 		{
 			Description: "User login",
-			Route:       "/api/v1/login",
+			Route:       "/api/v1/token",
 			Method:      "POST",
 			Body: strings.NewReader(helpers.JsonToString(requests.UserLogin{
 				Email:    helpers.UserEmail,

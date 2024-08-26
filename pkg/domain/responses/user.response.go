@@ -26,24 +26,18 @@ type UserHTTP struct {
 
 // UserLogin login response
 type UserLogin struct {
-	ID        entities.UserID `json:"id" xml:"id"`
-	Email     string          `json:"email" xml:"email"`
-	Lastname  string          `json:"lastname" xml:"lastname"`
-	Firstname string          `json:"firstname" xml:"firstname"`
-	Token     string          `json:"token" xml:"token"`
-	ExpiresAt string          `json:"token_expires_at" xml:"expires_at"`
-	CreatedAt string          `json:"created_at" xml:"created_at"`
-	UpdatedAt string          `json:"updated_at" xml:"updated_at"`
+	AccessToken          string `json:"access_token" xml:"access_token"`
+	AccessTokenExpiresAt string `json:"access_token_expires_at" xml:"access_token_expires_at"`
 }
 
 // UserLoginRepository repository login response
 type UserLoginRepository struct {
-	ID        entities.UserID
-	Email     string
-	Lastname  string
-	Firstname string
-	CreatedAt string
-	UpdatedAt string
+	ID        entities.UserID `db:"id"`
+	Email     string          `db:"email"`
+	Lastname  string          `db:"lastname"`
+	Firstname string          `db:"firstname"`
+	CreatedAt string          `db:"created_at"`
+	UpdatedAt string          `db:"updated_at"`
 }
 
 // ToUser converts UserLoginRepository to User
@@ -101,12 +95,12 @@ func (u *UserCreation) ToUserHTTP() UserHTTP {
 
 // UserByIDRepository request to get a user by ID
 type UserByIdRepository struct {
-	ID        string
-	Email     string
-	Lastname  string
-	Firstname string
-	CreatedAt string
-	UpdatedAt string
+	ID        string `db:"id"`
+	Email     string `db:"email"`
+	Lastname  string `db:"lastname"`
+	Firstname string `db:"firstname"`
+	CreatedAt string `db:"created_at"`
+	UpdatedAt string `db:"updated_at"`
 }
 
 // UserByID request to get a user by ID
@@ -133,14 +127,14 @@ func (u *UserById) ToUserHTTP() UserHTTP {
 
 // ======== Get all users ========
 
-type UsersList Pagination[UsersListModel]
+type UsersList Pagination[UsersListRepository]
 
-// UsersListModel request a user by ID
-type UsersListModel struct {
-	ID        string `json:"id" xml:"id"`
-	Email     string `json:"email" xml:"email"`
-	Lastname  string `json:"lastname" xml:"lastname"`
-	Firstname string `json:"firstname" xml:"firstname"`
-	CreatedAt string `json:"created_at" xml:"created_at"`
-	UpdatedAt string `json:"updated_at" xml:"updated_at"`
+// UsersListRepository request a user by ID
+type UsersListRepository struct {
+	ID        string `db:"id" json:"id" xml:"id"`
+	Email     string `db:"email" json:"email" xml:"email"`
+	Lastname  string `db:"lastname" json:"lastname" xml:"lastname"`
+	Firstname string `db:"firstname" json:"firstname" xml:"firstname"`
+	CreatedAt string `db:"created_at" json:"created_at" xml:"created_at"`
+	UpdatedAt string `db:"updated_at" json:"updated_at" xml:"updated_at"`
 }
