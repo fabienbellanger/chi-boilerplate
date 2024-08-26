@@ -31,7 +31,7 @@ type UserLogin struct {
 	Lastname  string          `json:"lastname" xml:"lastname"`
 	Firstname string          `json:"firstname" xml:"firstname"`
 	Token     string          `json:"token" xml:"token"`
-	ExpiresAt string          `json:"expires_at" xml:"expires_at"`
+	ExpiresAt string          `json:"token_expires_at" xml:"expires_at"`
 	CreatedAt string          `json:"created_at" xml:"created_at"`
 	UpdatedAt string          `json:"updated_at" xml:"updated_at"`
 }

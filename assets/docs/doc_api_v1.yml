@@ -300,10 +300,13 @@ components:
           format: email
         token:
           type: string
+        token_expired_at:
+          type: string
+          format: date-time
         created_at:
           type: string
           format: date-time
-        expired_at:
+        updated_at:
           type: string
           format: date-time
       required:
@@ -312,8 +315,9 @@ components:
         - firstname
         - email
         - token
+        - token_expired_at
         - created_at
-        - expired_at
+        - updated_at
     UserEditRequest:
       type: object
       properties:
