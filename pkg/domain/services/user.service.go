@@ -80,10 +80,7 @@ func (us *userService) Create(req requests.UserCreation) (responses.UserCreation
 	}
 
 	now := time.Now()
-	userID, err := values_objects.NewID()
-	if err != nil {
-		return responses.UserCreation{}, utils.NewHTTPError(utils.StatusInternalServerError, "Internal server error", "Error during user creation", err)
-	}
+	userID := values_objects.NewID()
 	user := requests.UserCreationRepository{
 		ID:        userID.String(),
 		Lastname:  req.Lastname,
