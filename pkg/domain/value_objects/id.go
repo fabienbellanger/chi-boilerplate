@@ -18,11 +18,11 @@ func NewID() ID {
 	return ID{Value: uuid.New()}
 }
 
-// NewID creates a new ID from string
+// NewIDFrom creates a new ID from string
 func NewIDFrom(value string) (ID, error) {
-	uid, err1 := uuid.Parse(value)
-	if err1 != nil {
-		return ID{}, err1
+	uid, err := uuid.Parse(value)
+	if err != nil {
+		return ID{}, err
 	}
 	id := ID{Value: uid}
 
