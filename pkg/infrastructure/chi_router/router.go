@@ -3,7 +3,6 @@ package chi_router
 import (
 	"chi_boilerplate/pkg/adapters/db"
 	"chi_boilerplate/pkg/adapters/repositories/sqlx_mysql"
-	"chi_boilerplate/pkg/domain/services"
 	"chi_boilerplate/pkg/domain/usecases"
 	"chi_boilerplate/pkg/infrastructure/chi_router/handlers"
 	"chi_boilerplate/pkg/infrastructure/chi_router/handlers/api"
@@ -100,8 +99,7 @@ func (s *ChiServer) routes(r *chi.Mux) {
 		a.Route("/v1", func(v1 chi.Router) {
 			// User use case
 			userRepo := sqlx_mysql.NewUserMysqlRepository(s.DB)
-			userService := services.NewUser(userRepo)
-			userUseCase := usecases.NewUser(userService)
+			userUseCase := usecases.NewUser(userRepo)
 
 			// Public routes
 			v1.Group(func(v1 chi.Router) {

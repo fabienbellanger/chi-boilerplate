@@ -3,7 +3,6 @@ package cli
 import (
 	"chi_boilerplate/pkg/adapters/repositories/sqlx_mysql"
 	"chi_boilerplate/pkg/domain/requests"
-	"chi_boilerplate/pkg/domain/services"
 	"chi_boilerplate/pkg/domain/usecases"
 	"fmt"
 	"strings"
@@ -59,8 +58,7 @@ var userCmd = &cobra.Command{
 
 		// Call use case
 		userRepo := sqlx_mysql.NewUserMysqlRepository(db)
-		userService := services.NewUser(userRepo)
-		userUseCase := usecases.NewUser(userService)
+		userUseCase := usecases.NewUser(userRepo)
 		res, errRes := userUseCase.Create(user)
 		if errRes != nil {
 			fmt.Printf("\nError: %v (%v)\n", errRes.Message, errRes.Details)
