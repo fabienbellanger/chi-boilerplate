@@ -7,14 +7,13 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 	"github.com/spf13/viper"
 
 	vo "chi_boilerplate/pkg/domain/value_objects"
 )
 
 // UserID is a type for user ID
-type UserID = uuid.UUID
+type UserID = vo.ID
 
 // User is a struct that represents a user
 type User struct {
@@ -48,7 +47,7 @@ func (u *User) GenerateJWT(lifetime time.Duration, algo, secret string) (string,
 
 	// Set claims
 	claims := token.Claims.(jwt.MapClaims)
-	claims["sub"] = u.ID
+	claims["sub"] = u.ID.String()
 	claims["exp"] = expiresAt.Unix()
 	claims["iat"] = now.Unix()
 	claims["nbf"] = now.Unix()

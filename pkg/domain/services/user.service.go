@@ -10,7 +10,6 @@ import (
 	"errors"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/spf13/viper"
 )
 
@@ -81,7 +80,10 @@ func (us *userService) Create(req requests.UserCreation) (responses.UserCreation
 	}
 
 	now := time.Now()
-	userID := uuid.New()
+	userID, err := values_objects.NewID()
+	if err != nil {
+		return responses.UserCreation{}, utils.NewHTTPError(utils.StatusInternalServerError, "Internal server error", "Error during user creation", err)
+	}
 	user := requests.UserCreationRepository{
 		ID:        userID.String(),
 		Lastname:  req.Lastname,
@@ -117,6 +119,11 @@ func (us *userService) GetByID(req requests.UserByID) (responses.UserById, *util
 		return responses.UserById{}, utils.NewHTTPError(utils.StatusBadRequest, "Invalid request data", reqErrors, nil)
 	}
 
+	id, err := values_objects.NewIDFrom(req.ID)
+	if err != nil {
+		return responses.UserById{}, utils.NewHTTPError(utils.StatusBadRequest, "Invalid request data", reqErrors, nil)
+	}
+
 	userRepo, err := us.userRepository.GetByID(requests.UserByID{ID: req.ID})
 	if err != nil {
 		var e *utils.HTTPError
@@ -141,7 +148,7 @@ func (us *userService) GetByID(req requests.UserByID) (responses.UserById, *util
 		return responses.UserById{}, utils.NewHTTPError(utils.StatusInternalServerError, "Internal server error", "Error when getting user ", err)
 	}
 	user := responses.UserById{
-		ID:        uuid.MustParse(userRepo.ID),
+		ID:        id,
 		Email:     email,
 		Lastname:  userRepo.Lastname,
 		Firstname: userRepo.Firstname,

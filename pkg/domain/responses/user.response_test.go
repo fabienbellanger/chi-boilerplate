@@ -6,12 +6,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestUserByIdToUserHTTP(t *testing.T) {
-	id := uuid.MustParse("f47ac10b-58cc-0372-8562-0b8e853961a1")
+	id, _ := values_objects.NewIDFrom("f47ac10b-58cc-0372-8562-0b8e853961a1")
 	email, _ := values_objects.NewEmail("test@test.com")
 	tt, _ := time.Parse(time.RFC3339, "2021-01-01T00:00:00Z")
 	user := UserById{
@@ -36,7 +35,7 @@ func TestUserByIdToUserHTTP(t *testing.T) {
 }
 
 func TestUserCreationToUserHTTP(t *testing.T) {
-	id := uuid.MustParse("f47ac10b-58cc-0372-8562-0b8e853961a1")
+	id, _ := values_objects.NewIDFrom("f47ac10b-58cc-0372-8562-0b8e853961a1")
 	email, _ := values_objects.NewEmail("test@test.com")
 	tt, _ := time.Parse(time.RFC3339, "2021-01-01T00:00:00Z")
 	user := UserCreation{
@@ -61,11 +60,11 @@ func TestUserCreationToUserHTTP(t *testing.T) {
 }
 
 func TestUserLoginRepository(t *testing.T) {
-	id := uuid.MustParse("f47ac10b-58cc-0372-8562-0b8e853961a1")
+	id, _ := values_objects.NewIDFrom("f47ac10b-58cc-0372-8562-0b8e853961a1")
 	email, _ := values_objects.NewEmail("test@test.com")
 	tt, _ := time.Parse(time.RFC3339, "2021-01-01T00:00:00Z")
 	user := UserLoginRepository{
-		ID:        id,
+		ID:        id.String(),
 		Email:     "test@test.com",
 		Lastname:  "Doe",
 		Firstname: "john",

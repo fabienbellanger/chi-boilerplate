@@ -2,6 +2,7 @@ package responses
 
 import (
 	"chi_boilerplate/pkg/domain/entities"
+	values_objects "chi_boilerplate/pkg/domain/value_objects"
 	vo "chi_boilerplate/pkg/domain/value_objects"
 	"time"
 )
@@ -32,12 +33,12 @@ type UserLogin struct {
 
 // UserLoginRepository repository login response
 type UserLoginRepository struct {
-	ID        entities.UserID `db:"id"`
-	Email     string          `db:"email"`
-	Lastname  string          `db:"lastname"`
-	Firstname string          `db:"firstname"`
-	CreatedAt string          `db:"created_at"`
-	UpdatedAt string          `db:"updated_at"`
+	ID        string `db:"id"`
+	Email     string `db:"email"`
+	Lastname  string `db:"lastname"`
+	Firstname string `db:"firstname"`
+	CreatedAt string `db:"created_at"`
+	UpdatedAt string `db:"updated_at"`
 }
 
 // ToUser converts UserLoginRepository to User
@@ -57,8 +58,13 @@ func (ulr *UserLoginRepository) ToUser() (entities.User, error) {
 		return entities.User{}, err
 	}
 
+	id, err := values_objects.NewIDFrom(ulr.ID)
+	if err != nil {
+		return entities.User{}, err
+	}
+
 	return entities.User{
-		ID:        ulr.ID,
+		ID:        id,
 		Email:     email,
 		Lastname:  ulr.Lastname,
 		Firstname: ulr.Firstname,
