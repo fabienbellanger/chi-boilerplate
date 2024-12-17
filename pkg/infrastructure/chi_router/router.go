@@ -78,7 +78,7 @@ func (s *ChiServer) HandleError(f func(w http.ResponseWriter, r *http.Request) e
 // routes defines the routes of the server.
 func (s *ChiServer) routes(r *chi.Mux) {
 	// Web routes
-	r.Get("/health-check", s.HandleError(web.HealthCheck))
+	r.Get("/health", s.HandleError(web.HealthCheck))
 
 	// API documentation
 	r.Route("/doc", func(d chi.Router) {
