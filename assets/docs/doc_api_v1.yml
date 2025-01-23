@@ -32,9 +32,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UserLoginRequest'
-            example:
-              email: test@gmail.com
-              password: "12548745714"
       responses:
         '200':
           description: OK
@@ -282,6 +279,9 @@ components:
         password:
           type: string
           minLength: 8
+      example:
+        email: user@example.com
+        password: "00000000"
       required:
         - email
         - password

@@ -198,7 +198,7 @@ rm keys/private.ec.key
 
 ## TODO
 
-- [ ] Replace SHA2 by argon2 for password hashing
+- [ ] Replace SHA2 by argon2/bcrypt for password hashing
 - [ ] Add / Test `Http Rate Limiting Middleware` middleware
 - [ ] Add roles and scopes
 - [ ] Add Docker support
