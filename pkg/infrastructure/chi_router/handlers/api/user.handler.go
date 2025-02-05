@@ -43,12 +43,12 @@ func (u *User) UserProtectedRoutes() {
 }
 
 func (u *User) login(w http.ResponseWriter, r *http.Request) error {
-	var body requests.UserLogin
+	var body requests.GetToken
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		return utils.Err400(w, err, "Error decoding body", nil)
 	}
 
-	res, err := u.userUseCase.Login(body)
+	res, err := u.userUseCase.GetToken(body)
 	if err != nil {
 		return err.SendError(w)
 	}

@@ -25,8 +25,8 @@ type UserHTTP struct {
 
 // ======== Login ========
 
-// UserLogin login response
-type UserLogin struct {
+// GetToken login response
+type GetToken struct {
 	AccessToken          string `json:"access_token" xml:"access_token"`
 	AccessTokenExpiresAt string `json:"access_token_expires_at" xml:"access_token_expires_at"`
 }

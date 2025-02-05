@@ -15,7 +15,7 @@ import (
 
 // User is an interface for user use cases
 type User interface {
-	Login(requests.UserLogin) (responses.UserLogin, *utils.HTTPError)
+	GetToken(requests.GetToken) (responses.GetToken, *utils.HTTPError)
 	Create(requests.UserCreation) (responses.UserCreation, *utils.HTTPError)
 	GetByID(requests.UserByID) (responses.UserById, *utils.HTTPError)
 	GetAll(requests.UsersList) (responses.UsersList, *utils.HTTPError)
@@ -32,16 +32,16 @@ func NewUser(userRepository repositories.UserRepository) User {
 	return &userUseCase{userRepository}
 }
 
-// Login user
-func (uc *userUseCase) Login(req requests.UserLogin) (responses.UserLogin, *utils.HTTPError) {
-	loginErrors := utils.ValidateStruct(req)
-	if loginErrors != nil {
-		return responses.UserLogin{}, utils.NewHTTPError(utils.StatusBadRequest, "Invalid request data", loginErrors, nil)
+// GetToken user
+func (uc *userUseCase) GetToken(req requests.GetToken) (responses.GetToken, *utils.HTTPError) {
+	getTokenErrors := utils.ValidateStruct(req)
+	if getTokenErrors != nil {
+		return responses.GetToken{}, utils.NewHTTPError(utils.StatusBadRequest, "Invalid request data", getTokenErrors, nil)
 	}
 
 	hashedPassword := entities.HashUserPassword(req.Password)
 
-	userRepo, err := uc.userRepository.Login(requests.UserLogin{Email: req.Email, Password: hashedPassword})
+	userRepo, err := uc.userRepository.Login(requests.GetToken{Email: req.Email, Password: hashedPassword})
 	if err != nil {
 		var e *utils.HTTPError
 		if errors.Is(err, repositories.ErrUserNotFound) {
@@ -49,12 +49,12 @@ func (uc *userUseCase) Login(req requests.UserLogin) (responses.UserLogin, *util
 		} else {
 			e = utils.NewHTTPError(utils.StatusInternalServerError, "Internal server error", "Error during authentication", err)
 		}
-		return responses.UserLogin{}, e
+		return responses.GetToken{}, e
 	}
 
 	user, err := userRepo.ToUser()
 	if err != nil {
-		return responses.UserLogin{}, utils.NewHTTPError(utils.StatusInternalServerError, "Internal server error", "Error during authentication", err)
+		return responses.GetToken{}, utils.NewHTTPError(utils.StatusInternalServerError, "Internal server error", "Error during authentication", err)
 	}
 
 	// Create token
@@ -63,10 +63,10 @@ func (uc *userUseCase) Login(req requests.UserLogin) (responses.UserLogin, *util
 		viper.GetString("JWT_ALGO"),
 		viper.GetString("JWT_SECRET"))
 	if err != nil {
-		return responses.UserLogin{}, utils.NewHTTPError(utils.StatusInternalServerError, "Internal server error", "Error during token generation", err)
+		return responses.GetToken{}, utils.NewHTTPError(utils.StatusInternalServerError, "Internal server error", "Error during token generation", err)
 	}
 
-	return responses.UserLogin{
+	return responses.GetToken{
 		AccessToken:          token,
 		AccessTokenExpiresAt: expiresAt.Format(time.RFC3339),
 	}, nil

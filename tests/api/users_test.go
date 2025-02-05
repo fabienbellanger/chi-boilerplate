@@ -16,7 +16,7 @@ func TestUserLogin(t *testing.T) {
 			Description: "User login",
 			Route:       "/api/v1/token",
 			Method:      "POST",
-			Body: strings.NewReader(helpers.JsonToString(requests.UserLogin{
+			Body: strings.NewReader(helpers.JsonToString(requests.GetToken{
 				Email:    helpers.UserEmail,
 				Password: helpers.UserPassword,
 			})),

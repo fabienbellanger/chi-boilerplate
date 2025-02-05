@@ -13,7 +13,7 @@ func TestWebRoutes(t *testing.T) {
 	useCases := []helpers.Test{
 		{
 			Description:  "Health Check route",
-			Route:        "/health-check",
+			Route:        "/health",
 			Method:       "GET",
 			CheckCode:    true,
 			CheckBody:    true,

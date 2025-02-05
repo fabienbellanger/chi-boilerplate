@@ -6,7 +6,9 @@
 	vet \
 	serve \
 	serve-race \
+	serve-logs \
 	logs \
+	watch \
 	build \
 	test \
 	bench \
@@ -77,9 +79,17 @@ serve:
 serve-race:
 	$(GO_RUN) run -race $(MAIN_PATH)
 
+## serve-logs: Serve API with pretty logs
+serve-logs:
+	$(GO_RUN) $(MAIN_PATH) run | $(GO_RUN) $(MAIN_PATH) logs
+
 ## logs: Display server logs
 logs:
 	$(GO_RUN) $(MAIN_PATH) logs
+
+## watch: Serve API with pretty logs and hot reload
+watch:
+	air | $(GO_RUN) $(MAIN_PATH) logs
 
 build: format
 	$(GO_BUILD) -ldflags "-s -w" -o $(BINARY_NAME) -v $(MAIN_PATH)

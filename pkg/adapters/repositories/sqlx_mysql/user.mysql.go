@@ -21,7 +21,7 @@ func NewUserMysqlRepository(db *db.MySQL) *UserMysqlRepository {
 }
 
 // Login returns a user if a user is found
-func (u *UserMysqlRepository) Login(req requests.UserLogin) (responses.UserLoginRepository, error) {
+func (u *UserMysqlRepository) Login(req requests.GetToken) (responses.UserLoginRepository, error) {
 	var user responses.UserLoginRepository
 	row := u.db.QueryRowx(`
 		SELECT id, email, lastname, firstname, created_at, updated_at

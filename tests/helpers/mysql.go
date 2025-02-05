@@ -184,7 +184,7 @@ func createMySQLUserAndAuthenticate(db *db.MySQL) (token string, err error) {
 	}
 
 	// Get User
-	u, err := userRepo.Login(requests.UserLogin{
+	u, err := userRepo.Login(requests.GetToken{
 		Email:    UserEmail,
 		Password: entities.HashUserPassword(UserPassword),
 	})

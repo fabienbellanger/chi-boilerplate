@@ -41,7 +41,18 @@ A simple boilerplate for [Chi](https://go-chi.io)
 | `make logs`         | `go run cmd/main.go logs -s`                  | Start server logs reader                    |
 
 
-## Swagger
+## Hot reload
+
+Install [`air`](https://github.com/air-verse/air)
+
+Run:
+```bash
+air
+```
+or:
+```bash
+air | make logs
+```
 
 TODO
 

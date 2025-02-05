@@ -13,7 +13,7 @@ var (
 
 // UserRepository is the interface that wraps the basic user repository methods.
 type UserRepository interface {
-	Login(requests.UserLogin) (responses.UserLoginRepository, error)
+	Login(requests.GetToken) (responses.UserLoginRepository, error)
 	Create(requests.UserCreationRepository) error
 	GetByID(requests.UserByID) (responses.UserByIdRepository, error)
 	GetAll(requests.UsersList) ([]responses.UsersListRepository, error)
