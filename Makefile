@@ -10,6 +10,7 @@
 	logs \
 	watch \
 	rabbit-client \
+	rabbit-server \
 	build \
 	test \
 	bench \
@@ -94,7 +95,11 @@ watch:
 
 ## rabbit-client: Start RabbitMQ client
 rabbit-client:
-	$(GO_RUN) $(MAIN_PATH) rabbitmq-client
+	$(GO_RUN) $(MAIN_PATH) rabbitmq -i client
+
+## rabbit-server: Start RabbitMQ server
+rabbit-server:
+	$(GO_RUN) $(MAIN_PATH) rabbitmq -i server
 
 build: format
 	$(GO_BUILD) -ldflags "-s -w" -o $(BINARY_NAME) -v $(MAIN_PATH)
