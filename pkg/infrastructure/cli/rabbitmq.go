@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -26,6 +27,11 @@ var rabbitMQCmd = &cobra.Command{
 	Short: "Start RabbitMQ",
 	Long:  `Start RabbitMQ`,
 	Run: func(cmd *cobra.Command, args []string) {
+		err := initConfig()
+		if err != nil {
+			log.Fatalln(err)
+		}
+
 		if rabbitInstanceFlag == "server" {
 			startRabbitMQServer()
 		} else if rabbitInstanceFlag == "client" {
@@ -36,20 +42,16 @@ var rabbitMQCmd = &cobra.Command{
 	},
 }
 
-func startRabbitMQClient() {
-	fmt.Printf("\nStart RabbitMQ client\n")
-
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+func startRabbitMQ() (*amqp.Connection, amqp.Queue, *amqp.Channel) {
+	conn, err := amqp.Dial(viper.GetString("AMQP_URL"))
 	if err != nil {
 		log.Fatalf("Failed to connect to RabbitMQ: %v", err)
 	}
-	defer conn.Close()
 
 	ch, err := conn.Channel()
 	if err != nil {
 		log.Fatalf("Failed to open a channel: %v", err)
 	}
-	defer ch.Close()
 
 	q, err := ch.QueueDeclare(
 		"hello", // name
@@ -62,6 +64,16 @@ func startRabbitMQClient() {
 	if err != nil {
 		log.Fatalf("Failed to declare a queue: %v", err)
 	}
+
+	return conn, q, ch
+}
+
+func startRabbitMQClient() {
+	fmt.Printf("\nStart RabbitMQ client\n")
+
+	conn, q, ch := startRabbitMQ()
+	defer conn.Close()
+	defer ch.Close()
 
 	msgs, err := ch.Consume(
 		q.Name, // queue
@@ -91,35 +103,15 @@ func startRabbitMQClient() {
 func startRabbitMQServer() {
 	fmt.Printf("\nStart RabbitMQ server\n")
 
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
-	if err != nil {
-		log.Fatalf("Failed to connect to RabbitMQ: %v", err)
-	}
+	conn, q, ch := startRabbitMQ()
 	defer conn.Close()
-
-	ch, err := conn.Channel()
-	if err != nil {
-		log.Fatalf("Failed to open a channel: %v", err)
-	}
 	defer ch.Close()
-
-	q, err := ch.QueueDeclare(
-		"hello", // name
-		false,   // durable
-		false,   // delete when unused
-		false,   // exclusive
-		false,   // no-wait
-		nil,     // arguments
-	)
-	if err != nil {
-		log.Fatalf("Failed to declare a queue: %v", err)
-	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	body := "Hello World!"
-	err = ch.PublishWithContext(ctx,
+	err := ch.PublishWithContext(ctx,
 		"",     // exchange
 		q.Name, // routing key
 		false,  // mandatory
