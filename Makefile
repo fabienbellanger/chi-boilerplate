@@ -9,6 +9,7 @@
 	serve-logs \
 	logs \
 	watch \
+	rabbit-client \
 	build \
 	test \
 	bench \
@@ -90,6 +91,10 @@ logs:
 ## watch: Serve API with pretty logs and hot reload
 watch:
 	air | $(GO_RUN) $(MAIN_PATH) logs
+
+## rabbit-client: Start RabbitMQ client
+rabbit-client:
+	$(GO_RUN) $(MAIN_PATH) rabbitmq-client
 
 build: format
 	$(GO_BUILD) -ldflags "-s -w" -o $(BINARY_NAME) -v $(MAIN_PATH)
