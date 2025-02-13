@@ -171,6 +171,9 @@ func createMySQLUserAndAuthenticate(db *db.MySQL) (token string, err error) {
 		return
 	}
 	userID, err := vo.NewIDFrom(UserID)
+	if err != nil {
+		return "", err
+	}
 	userRepo := sqlx_mysql.NewUserMysqlRepository(db)
 	password, err := entities.HashUserPassword(UserPassword)
 	if err != nil {
@@ -189,6 +192,7 @@ func createMySQLUserAndAuthenticate(db *db.MySQL) (token string, err error) {
 		return
 	}
 
+	// Generate JWT token
 	token, _, err = entities.GenerateJWT(userID, viper.GetDuration("JWT_LIFETIME"), viper.GetString("JWT_ALGO"), viper.GetString("JWT_SECRET"))
 	if err != nil {
 		return
