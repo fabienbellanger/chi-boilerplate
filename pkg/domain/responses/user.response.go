@@ -144,3 +144,32 @@ type UsersListRepository struct {
 	CreatedAt string `db:"created_at" json:"created_at" xml:"created_at"`
 	UpdatedAt string `db:"updated_at" json:"updated_at" xml:"updated_at"`
 }
+
+// ======== Get by email ========
+
+type GetByEmail struct {
+	ID       entities.UserID `json:"id" xml:"id" form:"id"`
+	Password vo.Password     `json:"password" xml:"password" form:"password"`
+}
+
+type GetByEmailRepository struct {
+	ID       string `json:"id" xml:"id" form:"id"`
+	Password string `json:"password" xml:"password" form:"password"`
+}
+
+// ToGetByEmail converts GetByEmailRepository to GetByEmail
+func (e *GetByEmailRepository) ToGetByEmail() (GetByEmail, error) {
+	id, err := values_objects.NewIDFrom(e.ID)
+	if err != nil {
+		return GetByEmail{}, err
+	}
+
+	password, err := values_objects.NewPassword(e.Password)
+	if err != nil {
+		return GetByEmail{}, err
+	}
+	return GetByEmail{
+		ID:       id,
+		Password: password,
+	}, nil
+}

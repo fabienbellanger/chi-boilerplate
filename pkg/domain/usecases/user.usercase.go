@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/spf13/viper"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // User is an interface for user use cases
@@ -39,26 +40,24 @@ func (uc *userUseCase) GetToken(req requests.GetToken) (responses.GetToken, *uti
 		return responses.GetToken{}, utils.NewHTTPError(utils.StatusBadRequest, "Invalid request data", getTokenErrors, nil)
 	}
 
-	hashedPassword := entities.HashUserPassword(req.Password)
-
-	userRepo, err := uc.userRepository.Login(requests.GetToken{Email: req.Email, Password: hashedPassword})
+	loginResponse, err := uc.userRepository.GetByEmail(requests.GetByEmail{Email: req.Email})
 	if err != nil {
 		var e *utils.HTTPError
 		if errors.Is(err, repositories.ErrUserNotFound) {
-			e = utils.NewHTTPError(utils.StatusUnauthorized, "Unauthorized", nil, nil)
+			e = utils.NewHTTPError(utils.StatusNotFound, "User not found", nil, nil)
 		} else {
 			e = utils.NewHTTPError(utils.StatusInternalServerError, "Internal server error", "Error during authentication", err)
 		}
 		return responses.GetToken{}, e
 	}
 
-	user, err := userRepo.ToUser()
-	if err != nil {
-		return responses.GetToken{}, utils.NewHTTPError(utils.StatusInternalServerError, "Internal server error", "Error during authentication", err)
+	if bcrypt.CompareHashAndPassword([]byte(loginResponse.Password.Value), []byte(req.Password)) != nil {
+		return responses.GetToken{}, utils.NewHTTPError(utils.StatusUnauthorized, "Unauthorized", nil, nil)
 	}
 
 	// Create token
-	token, expiresAt, err := user.GenerateJWT(
+	token, expiresAt, err := entities.GenerateJWT(
+		loginResponse.ID,
 		viper.GetDuration("JWT_LIFETIME"),
 		viper.GetString("JWT_ALGO"),
 		viper.GetString("JWT_SECRET"))
@@ -81,11 +80,15 @@ func (uc *userUseCase) Create(req requests.UserCreation) (responses.UserCreation
 
 	now := time.Now()
 	userID := vo.NewID()
+	password, err := entities.HashUserPassword(req.Password)
+	if err != nil {
+		return responses.UserCreation{}, utils.NewHTTPError(utils.StatusInternalServerError, "Error when hashing password", err, nil)
+	}
 	user := requests.UserCreationRepository{
 		ID:        userID.String(),
 		Lastname:  req.Lastname,
 		Firstname: req.Firstname,
-		Password:  entities.HashUserPassword(req.Password),
+		Password:  password,
 		Email:     req.Email,
 		CreatedAt: now.Format(utils.SqlDateTimeFormat),
 		UpdatedAt: now.Format(utils.SqlDateTimeFormat),
@@ -202,12 +205,17 @@ func (uc *userUseCase) Update(req requests.UserUpdate) (responses.UserById, *uti
 		return responses.UserById{}, utils.NewHTTPError(utils.StatusBadRequest, "Invalid request data", reqErrors, nil)
 	}
 
-	err := uc.userRepository.Update(requests.UserUpdateRepository{
+	password, err := entities.HashUserPassword(req.Password)
+	if err != nil {
+		return responses.UserById{}, utils.NewHTTPError(utils.StatusInternalServerError, "Error when hashing password", err, nil)
+	}
+
+	err = uc.userRepository.Update(requests.UserUpdateRepository{
 		ID:        req.ID,
 		Lastname:  req.Lastname,
 		Firstname: req.Firstname,
 		Email:     req.Email,
-		Password:  entities.HashUserPassword(req.Password),
+		Password:  password,
 		UpdatedAt: time.Now().Format(utils.SqlDateTimeFormat),
 	})
 	if err != nil {

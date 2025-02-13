@@ -2,12 +2,11 @@ package entities
 
 import (
 	"chi_boilerplate/utils"
-	"crypto/sha512"
-	"encoding/hex"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/spf13/viper"
+	"golang.org/x/crypto/bcrypt"
 
 	vo "chi_boilerplate/pkg/domain/value_objects"
 )
@@ -28,13 +27,13 @@ type User struct {
 }
 
 // HashUserPassword hashes a password
-func HashUserPassword(password string) string {
-	passwordBytes := sha512.Sum512([]byte(password))
-	return hex.EncodeToString(passwordBytes[:])
+func HashUserPassword(password string) (string, error) {
+	passwordBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	return string(passwordBytes), err
 }
 
 // GenerateJWT returns a token
-func (u *User) GenerateJWT(lifetime time.Duration, algo, secret string) (string, time.Time, error) {
+func GenerateJWT(id UserID, lifetime time.Duration, algo, secret string) (string, time.Time, error) {
 	// Create token and key
 	token, key, err := utils.GetTokenAndKeyFromAlgo(algo, secret, viper.GetString("JWT_PRIVATE_KEY_PATH"))
 	if err != nil {
@@ -47,7 +46,7 @@ func (u *User) GenerateJWT(lifetime time.Duration, algo, secret string) (string,
 
 	// Set claims
 	claims := token.Claims.(jwt.MapClaims)
-	claims["sub"] = u.ID.String()
+	claims["sub"] = id.String()
 	claims["exp"] = expiresAt.Unix()
 	claims["iat"] = now.Unix()
 	claims["nbf"] = now.Unix()

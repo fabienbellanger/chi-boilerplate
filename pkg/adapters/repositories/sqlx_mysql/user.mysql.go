@@ -20,25 +20,6 @@ func NewUserMysqlRepository(db *db.MySQL) *UserMysqlRepository {
 	return &UserMysqlRepository{db: db.DB}
 }
 
-// Login returns a user if a user is found
-func (u *UserMysqlRepository) Login(req requests.GetToken) (responses.UserLoginRepository, error) {
-	var user responses.UserLoginRepository
-	row := u.db.QueryRowx(`
-		SELECT id, email, lastname, firstname, created_at, updated_at
-		FROM users 
-		WHERE email = ? AND password = ?
-			AND deleted_at IS NULL
-		LIMIT 1`,
-		req.Email,
-		req.Password,
-	)
-	if err := row.StructScan(&user); err != nil {
-		return user, repositories.ErrUserNotFound
-	}
-
-	return user, nil
-}
-
 // Create creates a new user
 func (u *UserMysqlRepository) Create(user requests.UserCreationRepository) error {
 	_, err := u.db.Exec(`
@@ -76,6 +57,29 @@ func (u *UserMysqlRepository) GetByID(req requests.UserByID) (responses.UserById
 	}
 
 	return user, nil
+}
+
+// GetByID returns a user by Email
+func (u *UserMysqlRepository) GetByEmail(req requests.GetByEmail) (responses.GetByEmail, error) {
+	var user responses.GetByEmailRepository
+	row := u.db.QueryRowx(`
+		SELECT id, password
+		FROM users 
+		WHERE email = ?
+			AND deleted_at IS NULL
+		LIMIT 1`,
+		req.Email,
+	)
+	if err := row.StructScan(&user); err != nil {
+		return responses.GetByEmail{}, repositories.ErrUserNotFound
+	}
+
+	response, err := user.ToGetByEmail()
+	if err != nil {
+		return responses.GetByEmail{}, repositories.ErrUserNotFound // TODO: change error type
+	}
+
+	return response, nil
 }
 
 // Delete deletes a user

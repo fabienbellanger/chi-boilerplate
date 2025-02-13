@@ -75,7 +75,8 @@ func TestGenerateJWT(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			token, expiredAt, err := tt.args.user.GenerateJWT(
+			token, expiredAt, err := GenerateJWT(
+				tt.args.user.ID,
 				tt.args.lifetime,
 				tt.args.algo,
 				tt.args.secret,

@@ -5,9 +5,11 @@ import (
 	"chi_boilerplate/pkg/adapters/repositories/sqlx_mysql"
 	"chi_boilerplate/pkg/domain/entities"
 	"chi_boilerplate/pkg/domain/requests"
+	vo "chi_boilerplate/pkg/domain/value_objects"
 	"chi_boilerplate/pkg/infrastructure/chi_router"
 	"chi_boilerplate/pkg/infrastructure/logger"
 	"chi_boilerplate/utils"
+
 	"net/http"
 	"testing"
 
@@ -20,7 +22,7 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/mysql"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/google/uuid"
+
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
@@ -168,13 +170,17 @@ func createMySQLUserAndAuthenticate(db *db.MySQL) (token string, err error) {
 	if err != nil {
 		return
 	}
-	userID := uuid.MustParse(UserID)
+	userID, err := vo.NewIDFrom(UserID)
 	userRepo := sqlx_mysql.NewUserMysqlRepository(db)
+	password, err := entities.HashUserPassword(UserPassword)
+	if err != nil {
+		return "", err
+	}
 	err = userRepo.Create(requests.UserCreationRepository{
 		ID:        userID.String(),
 		Lastname:  "Test",
 		Firstname: "Test",
-		Password:  entities.HashUserPassword(UserPassword),
+		Password:  password,
 		Email:     UserEmail,
 		CreatedAt: created_at.Format(utils.SqlDateTimeFormat),
 		UpdatedAt: updated_at.Format(utils.SqlDateTimeFormat),
@@ -183,21 +189,7 @@ func createMySQLUserAndAuthenticate(db *db.MySQL) (token string, err error) {
 		return
 	}
 
-	// Get User
-	u, err := userRepo.Login(requests.GetToken{
-		Email:    UserEmail,
-		Password: entities.HashUserPassword(UserPassword),
-	})
-	if err != nil {
-		return
-	}
-
-	// Get token
-	user, err := u.ToUser()
-	if err != nil {
-		return
-	}
-	token, _, err = user.GenerateJWT(viper.GetDuration("JWT_LIFETIME"), viper.GetString("JWT_ALGO"), viper.GetString("JWT_SECRET"))
+	token, _, err = entities.GenerateJWT(userID, viper.GetDuration("JWT_LIFETIME"), viper.GetString("JWT_ALGO"), viper.GetString("JWT_SECRET"))
 	if err != nil {
 		return
 	}

@@ -56,3 +56,8 @@ type UserDelete struct {
 
 // UsersList request
 type UsersList Pagination
+
+// GetByEmail request
+type GetByEmail struct {
+	Email string `json:"email" xml:"email" form:"email" validate:"required,email"`
+}
