@@ -2,7 +2,6 @@ package responses
 
 import (
 	"chi_boilerplate/pkg/domain/entities"
-	values_objects "chi_boilerplate/pkg/domain/value_objects"
 	vo "chi_boilerplate/pkg/domain/value_objects"
 	"time"
 )
@@ -23,7 +22,7 @@ type UserHTTP struct {
 	UpdatedAt string `json:"updated_at" xml:"updated_at"`
 }
 
-// ======== Login ========
+// ======== Get token ========
 
 // GetToken login response
 type GetToken struct {
@@ -58,7 +57,7 @@ func (ulr *UserLoginRepository) ToUser() (entities.User, error) {
 		return entities.User{}, err
 	}
 
-	id, err := values_objects.NewIDFrom(ulr.ID)
+	id, err := vo.NewIDFrom(ulr.ID)
 	if err != nil {
 		return entities.User{}, err
 	}
@@ -99,16 +98,6 @@ func (u *UserCreation) ToUserHTTP() UserHTTP {
 
 // ======== Get one user ========
 
-// UserByIDRepository request to get a user by ID
-type UserByIdRepository struct {
-	ID        string `db:"id"`
-	Email     string `db:"email"`
-	Lastname  string `db:"lastname"`
-	Firstname string `db:"firstname"`
-	CreatedAt string `db:"created_at"`
-	UpdatedAt string `db:"updated_at"`
-}
-
 // UserByID request to get a user by ID
 type UserById struct {
 	ID        entities.UserID `json:"id" xml:"id"`
@@ -117,6 +106,16 @@ type UserById struct {
 	Firstname string          `json:"firstname" xml:"firstname"`
 	CreatedAt time.Time       `json:"created_at" xml:"created_at"`
 	UpdatedAt time.Time       `json:"updated_at" xml:"updated_at"`
+}
+
+// UserByIDRepository request to get a user by ID
+type UserByIdRepository struct {
+	ID        string `db:"id"`
+	Email     string `db:"email"`
+	Lastname  string `db:"lastname"`
+	Firstname string `db:"firstname"`
+	CreatedAt string `db:"created_at"`
+	UpdatedAt string `db:"updated_at"`
 }
 
 // ToUserHTTP converts UserById to UserHTTP
@@ -159,12 +158,12 @@ type GetByEmailRepository struct {
 
 // ToGetByEmail converts GetByEmailRepository to GetByEmail
 func (e *GetByEmailRepository) ToGetByEmail() (GetByEmail, error) {
-	id, err := values_objects.NewIDFrom(e.ID)
+	id, err := vo.NewIDFrom(e.ID)
 	if err != nil {
 		return GetByEmail{}, err
 	}
 
-	password, err := values_objects.NewPassword(e.Password)
+	password, err := vo.NewPassword(e.Password)
 	if err != nil {
 		return GetByEmail{}, err
 	}

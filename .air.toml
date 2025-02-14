@@ -15,7 +15,7 @@ full_bin = "APP_ENV=development APP_USER=air ./tmp/main run"
 # Watch these filename extensions.
 include_ext = ["go", "tpl", "tmpl", "html", "django"]
 # Ignore these filename extensions or directories.
-exclude_dir = ["assets", "tmp", "vendor", "frontend/node_modules"]
+exclude_dir = ["assets", "tmp", "vendor", "migrations", "templates"]
 # Watch these directories if you specified.
 include_dir = []
 # Exclude files.
