@@ -3,8 +3,8 @@ package helpers
 import (
 	"chi_boilerplate/pkg/adapters/db"
 	"chi_boilerplate/pkg/adapters/repositories/sqlx_mysql"
-	"chi_boilerplate/pkg/domain/entities"
 	"chi_boilerplate/pkg/domain/requests"
+	"chi_boilerplate/pkg/domain/services"
 	vo "chi_boilerplate/pkg/domain/value_objects"
 	"chi_boilerplate/pkg/infrastructure/chi_router"
 	"chi_boilerplate/pkg/infrastructure/logger"
@@ -160,15 +160,15 @@ func runMySQLMigrations(m string, db *db.MySQL) error {
 	return nil
 }
 
-func createMySQLUserAndAuthenticate(db *db.MySQL) (token string, err error) {
+func createMySQLUserAndAuthenticate(db *db.MySQL) (string, error) {
 	// Create first user
 	created_at, err := time.Parse(time.RFC3339, UserCreatedAt)
 	if err != nil {
-		return
+		return "", err
 	}
 	updated_at, err := time.Parse(time.RFC3339, UserUpdatedAt)
 	if err != nil {
-		return
+		return "", err
 	}
 	userID, err := vo.NewIDFrom(UserID)
 	if err != nil {
@@ -194,14 +194,14 @@ func createMySQLUserAndAuthenticate(db *db.MySQL) (token string, err error) {
 		UpdatedAt: updated_at.Format(utils.SqlDateTimeFormat),
 	})
 	if err != nil {
-		return
+		return "", err
 	}
 
 	// Generate JWT token
-	token, _, err = entities.GenerateJWT(userID, viper.GetDuration("JWT_LIFETIME"), viper.GetString("JWT_ALGO"), viper.GetString("JWT_SECRET"))
+	jwt, err := services.NewJWT(userID, viper.GetDuration("JWT_LIFETIME"), viper.GetString("JWT_ALGO"), viper.GetString("JWT_SECRET"))
 	if err != nil {
-		return
+		return "", err
 	}
 
-	return
+	return jwt.Value, nil
 }

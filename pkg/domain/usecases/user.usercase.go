@@ -1,10 +1,10 @@
 package usecases
 
 import (
-	"chi_boilerplate/pkg/domain/entities"
 	"chi_boilerplate/pkg/domain/repositories"
 	"chi_boilerplate/pkg/domain/requests"
 	"chi_boilerplate/pkg/domain/responses"
+	"chi_boilerplate/pkg/domain/services"
 	vo "chi_boilerplate/pkg/domain/value_objects"
 	"chi_boilerplate/utils"
 	"errors"
@@ -55,7 +55,7 @@ func (uc *userUseCase) GetToken(req requests.GetToken) (responses.GetToken, *uti
 	}
 
 	// Create token
-	token, expiresAt, err := entities.GenerateJWT(
+	jwt, err := services.NewJWT(
 		loginResponse.ID,
 		viper.GetDuration("JWT_LIFETIME"),
 		viper.GetString("JWT_ALGO"),
@@ -65,8 +65,8 @@ func (uc *userUseCase) GetToken(req requests.GetToken) (responses.GetToken, *uti
 	}
 
 	return responses.GetToken{
-		AccessToken:          token,
-		AccessTokenExpiresAt: expiresAt.Format(time.RFC3339),
+		AccessToken:          jwt.Value,
+		AccessTokenExpiresAt: jwt.ExpiredAt.Format(time.RFC3339),
 	}, nil
 }
 

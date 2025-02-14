@@ -41,5 +41,5 @@ func (p *Password) HashUserPassword() (string, error) {
 
 // Verify checks if the password is correct
 func (p *Password) Verify(hashedPassword string) error {
-	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(p.Value))
+	return bcrypt.CompareHashAndPassword([]byte(p.Value), []byte(hashedPassword))
 }

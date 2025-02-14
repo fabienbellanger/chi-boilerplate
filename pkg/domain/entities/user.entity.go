@@ -1,11 +1,7 @@
 package entities
 
 import (
-	"chi_boilerplate/utils"
 	"time"
-
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/spf13/viper"
 
 	vo "chi_boilerplate/pkg/domain/value_objects"
 )
@@ -23,32 +19,4 @@ type User struct {
 	CreatedAt time.Time   `json:"created_at" xml:"created_at" form:"created_at"`
 	UpdatedAt time.Time   `json:"updated_at" xml:"updated_at" form:"updated_at"`
 	DeletedAt *time.Time  `json:"-" xml:"-" form:"deleted_at"`
-}
-
-// GenerateJWT returns a token
-func GenerateJWT(id UserID, lifetime time.Duration, algo, secret string) (string, time.Time, error) {
-	// Create token and key
-	token, key, err := utils.GetTokenAndKeyFromAlgo(algo, secret, viper.GetString("JWT_PRIVATE_KEY_PATH"))
-	if err != nil {
-		return "", time.Now(), err
-	}
-
-	// Expiration time
-	now := time.Now()
-	expiresAt := now.Add(time.Hour * lifetime)
-
-	// Set claims
-	claims := token.Claims.(jwt.MapClaims)
-	claims["sub"] = id.String()
-	claims["exp"] = expiresAt.Unix()
-	claims["iat"] = now.Unix()
-	claims["nbf"] = now.Unix()
-
-	// Generate encoded token and send it as response
-	t, err := token.SignedString(key)
-	if err != nil {
-		return "", expiresAt, err
-	}
-
-	return t, expiresAt, nil
 }

@@ -1,6 +1,7 @@
-package entities
+package services
 
 import (
+	"chi_boilerplate/pkg/domain/entities"
 	"errors"
 	"testing"
 	"time"
@@ -10,16 +11,15 @@ import (
 
 func TestGenerateJWT(t *testing.T) {
 	type args struct {
-		user     User
+		user     entities.User
 		lifetime time.Duration
 		algo     string
 		secret   string
 	}
 
 	type result struct {
-		token     string
-		expiredAt time.Time
-		err       error
+		jwt JWT
+		err error
 	}
 
 	lifetime := time.Duration(2)
@@ -32,63 +32,60 @@ func TestGenerateJWT(t *testing.T) {
 		{
 			name: "Invalid algo",
 			args: args{
-				user:     User{},
+				user:     entities.User{},
 				lifetime: lifetime,
 				algo:     "",
 				secret:   "my-secret",
 			},
 			wanted: result{
-				token:     "",
-				expiredAt: time.Now(),
-				err:       errors.New("unsupported JWT algo: must be HS512 or ES384"),
+				jwt: JWT{},
+				err: errors.New("unsupported JWT algo: must be HS512 or ES384"),
 			},
 		},
 		{
 			name: "Invalid algo",
 			args: args{
-				user:     User{},
+				user:     entities.User{},
 				lifetime: lifetime,
 				algo:     "HS512",
 				secret:   "secret",
 			},
 			wanted: result{
-				token:     "",
-				expiredAt: time.Now(),
-				err:       errors.New("secret must have at least 8 characters"),
+				jwt: JWT{},
+				err: errors.New("secret must have at least 8 characters"),
 			},
 		},
 		{
 			name: "Valid",
 			args: args{
-				user:     User{},
+				user:     entities.User{},
 				lifetime: lifetime,
 				algo:     "HS512",
 				secret:   "my-secret",
 			},
 			wanted: result{
-				token:     "",
-				expiredAt: time.Now().Add(lifetime * time.Hour),
-				err:       nil,
+				jwt: JWT{},
+				err: nil,
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			token, expiredAt, err := GenerateJWT(
+			jwt, err := NewJWT(
 				tt.args.user.ID,
 				tt.args.lifetime,
 				tt.args.algo,
 				tt.args.secret,
 			)
-			got := result{token, expiredAt, err}
+			got := result{jwt, err}
 
 			if got.err != nil {
-				assert.Equal(t, got.token, tt.wanted.token)
+				assert.Equal(t, got.jwt.Value, tt.wanted.jwt.Value)
 			} else {
-				assert.Greater(t, len(got.token), 0)
-				assert.Greater(t, got.expiredAt, time.Now().Add(lifetime*time.Hour-time.Minute))
-				assert.Less(t, got.expiredAt, time.Now().Add(lifetime*time.Hour+time.Minute))
+				assert.Greater(t, len(got.jwt.Value), 0)
+				assert.Greater(t, got.jwt.ExpiredAt, time.Now().Add(lifetime*time.Hour-time.Minute))
+				assert.Less(t, got.jwt.ExpiredAt, time.Now().Add(lifetime*time.Hour+time.Minute))
 			}
 			assert.Equal(t, got.err, tt.wanted.err)
 		})
