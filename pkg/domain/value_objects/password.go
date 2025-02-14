@@ -2,6 +2,8 @@ package values_objects
 
 import (
 	"chi_boilerplate/utils"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 // Password represents an password value object
@@ -29,4 +31,15 @@ func NewPassword(value string) (Password, error) {
 // Validate checks if a struct is valid and returns an array of errors
 func (p *Password) Validate() utils.ValidatorErrors {
 	return utils.ValidateStruct(p)
+}
+
+// HashUserPassword hashes a password
+func (p *Password) HashUserPassword() (string, error) {
+	passwordBytes, err := bcrypt.GenerateFromPassword([]byte(p.Value), bcrypt.DefaultCost)
+	return string(passwordBytes), err
+}
+
+// Verify checks if the password is correct
+func (p *Password) Verify(hashedPassword string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(p.Value))
 }

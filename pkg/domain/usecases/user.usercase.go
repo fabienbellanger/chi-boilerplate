@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/spf13/viper"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // User is an interface for user use cases
@@ -51,7 +50,7 @@ func (uc *userUseCase) GetToken(req requests.GetToken) (responses.GetToken, *uti
 		return responses.GetToken{}, e
 	}
 
-	if bcrypt.CompareHashAndPassword([]byte(loginResponse.Password.Value), []byte(req.Password)) != nil {
+	if loginResponse.Password.Verify(req.Password) != nil {
 		return responses.GetToken{}, utils.NewHTTPError(utils.StatusUnauthorized, "Unauthorized", nil, nil)
 	}
 
@@ -80,7 +79,11 @@ func (uc *userUseCase) Create(req requests.UserCreation) (responses.UserCreation
 
 	now := time.Now()
 	userID := vo.NewID()
-	password, err := entities.HashUserPassword(req.Password)
+	password, err := vo.NewPassword(req.Password)
+	if err != nil {
+		return responses.UserCreation{}, utils.NewHTTPError(utils.StatusInternalServerError, "Password error", err, nil)
+	}
+	hashedPassword, err := password.HashUserPassword()
 	if err != nil {
 		return responses.UserCreation{}, utils.NewHTTPError(utils.StatusInternalServerError, "Error when hashing password", err, nil)
 	}
@@ -88,7 +91,7 @@ func (uc *userUseCase) Create(req requests.UserCreation) (responses.UserCreation
 		ID:        userID.String(),
 		Lastname:  req.Lastname,
 		Firstname: req.Firstname,
-		Password:  password,
+		Password:  hashedPassword,
 		Email:     req.Email,
 		CreatedAt: now.Format(utils.SqlDateTimeFormat),
 		UpdatedAt: now.Format(utils.SqlDateTimeFormat),
@@ -205,7 +208,11 @@ func (uc *userUseCase) Update(req requests.UserUpdate) (responses.UserById, *uti
 		return responses.UserById{}, utils.NewHTTPError(utils.StatusBadRequest, "Invalid request data", reqErrors, nil)
 	}
 
-	password, err := entities.HashUserPassword(req.Password)
+	password, err := vo.NewPassword(req.Password)
+	if err != nil {
+		return responses.UserById{}, utils.NewHTTPError(utils.StatusInternalServerError, "Password error", err, nil)
+	}
+	hashedPassword, err := password.HashUserPassword()
 	if err != nil {
 		return responses.UserById{}, utils.NewHTTPError(utils.StatusInternalServerError, "Error when hashing password", err, nil)
 	}
@@ -215,7 +222,7 @@ func (uc *userUseCase) Update(req requests.UserUpdate) (responses.UserById, *uti
 		Lastname:  req.Lastname,
 		Firstname: req.Firstname,
 		Email:     req.Email,
-		Password:  password,
+		Password:  hashedPassword,
 		UpdatedAt: time.Now().Format(utils.SqlDateTimeFormat),
 	})
 	if err != nil {

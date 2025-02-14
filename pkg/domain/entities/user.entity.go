@@ -6,7 +6,6 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/spf13/viper"
-	"golang.org/x/crypto/bcrypt"
 
 	vo "chi_boilerplate/pkg/domain/value_objects"
 )
@@ -24,12 +23,6 @@ type User struct {
 	CreatedAt time.Time   `json:"created_at" xml:"created_at" form:"created_at"`
 	UpdatedAt time.Time   `json:"updated_at" xml:"updated_at" form:"updated_at"`
 	DeletedAt *time.Time  `json:"-" xml:"-" form:"deleted_at"`
-}
-
-// HashUserPassword hashes a password
-func HashUserPassword(password string) (string, error) {
-	passwordBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	return string(passwordBytes), err
 }
 
 // GenerateJWT returns a token

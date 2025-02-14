@@ -175,7 +175,12 @@ func createMySQLUserAndAuthenticate(db *db.MySQL) (token string, err error) {
 		return "", err
 	}
 	userRepo := sqlx_mysql.NewUserMysqlRepository(db)
-	password, err := entities.HashUserPassword(UserPassword)
+
+	password, err := vo.NewPassword(UserPassword)
+	if err != nil {
+		return "", err
+	}
+	hashedPassword, err := password.HashUserPassword()
 	if err != nil {
 		return "", err
 	}
@@ -183,7 +188,7 @@ func createMySQLUserAndAuthenticate(db *db.MySQL) (token string, err error) {
 		ID:        userID.String(),
 		Lastname:  "Test",
 		Firstname: "Test",
-		Password:  password,
+		Password:  hashedPassword,
 		Email:     UserEmail,
 		CreatedAt: created_at.Format(utils.SqlDateTimeFormat),
 		UpdatedAt: updated_at.Format(utils.SqlDateTimeFormat),
