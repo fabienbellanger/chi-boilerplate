@@ -147,12 +147,15 @@ Go met à disposition de puissants outils pour mesurer les performances des prog
 
 => Lien vers une vidéo intéressante [Mesure et optimisation de la performance en Go](https://www.youtube.com/watch?v=jd47gDK-yDc)
 
+Installer `graphviz`
+
 ### pprof
 
 Lancer :
 
 ```bash
 curl http://localhost:<port>/debug/pprof/heap?seconds=10 > <fichier à analyser>
+curl http://localhost:<port>/debug/pprof/heap?seconds=10 -u "username:password" > <fichier à analyser>
 ```
 
 Puis :

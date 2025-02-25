@@ -43,9 +43,10 @@ func (s *ChiServer) initMiddlewares(r *chi.Mux) {
 	r.Use(middleware.RealIP)
 
 	// Profiler
-	if viper.GetBool("SERVER_PPROF") {
+	if viper.GetBool("ENABLE_PPROF") {
 		r.Group(func(r chi.Router) {
-			r.Use(s.initBasicAuth())
+			// TODO: Change?
+			// r.Use(s.initPprofBasicAuth())
 
 			r.Mount("/debug", middleware.Profiler())
 		})
@@ -98,6 +99,13 @@ func (s *ChiServer) initCORS() func(next http.Handler) http.Handler {
 func (s *ChiServer) initBasicAuth() func(next http.Handler) http.Handler {
 	creds := make(map[string]string, 1)
 	creds[viper.GetString("SERVER_BASICAUTH_USERNAME")] = viper.GetString("SERVER_BASICAUTH_PASSWORD")
+
+	return middleware.BasicAuth("Restricted", creds)
+}
+
+func (s *ChiServer) initPprofBasicAuth() func(next http.Handler) http.Handler {
+	creds := make(map[string]string, 1)
+	creds[viper.GetString("PPROF_BASICAUTH_USERNAME")] = viper.GetString("PPROF_BASICAUTH_PASSWORD")
 
 	return middleware.BasicAuth("Restricted", creds)
 }
