@@ -154,16 +154,22 @@ Installer `graphviz`
 Lancer :
 
 ```bash
-curl http://localhost:<port>/debug/pprof/heap?seconds=10 > <fichier à analyser>
-curl http://localhost:<port>/debug/pprof/heap?seconds=10 -u "username:password" > <fichier à analyser>
+curl http://localhost:3002/debug/pprof/heap?seconds=10 > <fichier à analyser>
+curl http://localhost:3002/debug/pprof/heap?seconds=10 -u "username:password" > <fichier à analyser>
 ```
 
 Puis :
 
 ```bash
-go tool pprof -http :7000 <fichier à analyser> # Interface web
-go tool pprof --nodefraction=0 -http :7000 <fichier à analyser> # Interface web avec tous les noeuds
+go tool pprof -http :3012 <fichier à analyser> # Interface web
+go tool pprof --nodefraction=0 -http :3012 <fichier à analyser> # Interface web avec tous les noeuds
 go tool pprof <fichier à analyser> # Ligne de commande
+```
+
+ou :
+
+```bash
+go tool pprof -http :3012 -seconds 10 http://localhost:3002/debug/pprof/heap
 ```
 
 ### trace
@@ -172,7 +178,7 @@ Lancer :
 
 ```bash
 go test <package path> -trace=<fichier à analyser>
-curl localhost:<port>/debug/pprof/trace?seconds=10 > <fichier à analyser>
+curl localhost:3002/debug/pprof/trace?seconds=10 > <fichier à analyser>
 ```
 
 Puis :

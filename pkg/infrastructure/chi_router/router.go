@@ -79,6 +79,7 @@ func (s *ChiServer) HandleError(f func(w http.ResponseWriter, r *http.Request) e
 func (s *ChiServer) routes(r *chi.Mux) {
 	// Web routes
 	r.Get("/health", s.HandleError(web.HealthCheck))
+	r.Get("/big-tasks", s.HandleError(web.BigTasks))
 
 	// API documentation
 	r.Route("/doc", func(d chi.Router) {
