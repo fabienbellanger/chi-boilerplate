@@ -44,13 +44,14 @@ var userCmd = &cobra.Command{
 		}
 
 		// Initialize configuration
-		if err := initConfig(); err != nil {
+		config, err := initConfig()
+		if err != nil {
 			fmt.Printf("\nError: %v\n", err)
 			return
 		}
 
 		// Initialize database
-		db, err := initDatabase()
+		db, err := initDatabase(config)
 		if err != nil {
 			fmt.Printf("\nError: %v\n", err)
 			return

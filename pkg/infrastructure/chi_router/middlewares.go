@@ -43,7 +43,7 @@ func (s *ChiServer) initMiddlewares(r *chi.Mux) {
 	r.Use(middleware.RealIP)
 
 	// Profiler
-	if viper.GetBool("ENABLE_PPROF") {
+	if viper.GetBool("PPROF_ENABLE") {
 		r.Group(func(r chi.Router) {
 			// TODO: Change?
 			// r.Use(s.initPprofBasicAuth())

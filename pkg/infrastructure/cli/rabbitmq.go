@@ -1,13 +1,13 @@
 package cli
 
 import (
+	"chi_boilerplate/pkg"
 	"context"
 	"fmt"
 	"log"
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -27,23 +27,23 @@ var rabbitMQCmd = &cobra.Command{
 	Short: "Start RabbitMQ",
 	Long:  `Start RabbitMQ`,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := initConfig()
+		config, err := initConfig()
 		if err != nil {
 			log.Fatalln(err)
 		}
 
 		if rabbitInstanceFlag == "server" {
-			startRabbitMQServer()
+			startRabbitMQServer(&config.AMQP)
 		} else if rabbitInstanceFlag == "client" {
-			startRabbitMQClient()
+			startRabbitMQClient(&config.AMQP)
 		} else {
 			log.Fatalf("Invalid instance: %s (must be client or server)", rabbitInstanceFlag)
 		}
 	},
 }
 
-func startRabbitMQ() (*amqp.Connection, amqp.Queue, *amqp.Channel) {
-	conn, err := amqp.Dial(viper.GetString("AMQP_URL"))
+func startRabbitMQ(config *pkg.ConfigAMQP) (*amqp.Connection, amqp.Queue, *amqp.Channel) {
+	conn, err := amqp.Dial(config.URL)
 	if err != nil {
 		log.Fatalf("Failed to connect to RabbitMQ: %v", err)
 	}
@@ -68,10 +68,10 @@ func startRabbitMQ() (*amqp.Connection, amqp.Queue, *amqp.Channel) {
 	return conn, q, ch
 }
 
-func startRabbitMQClient() {
+func startRabbitMQClient(config *pkg.ConfigAMQP) {
 	fmt.Printf("\nStart RabbitMQ client\n")
 
-	conn, q, ch := startRabbitMQ()
+	conn, q, ch := startRabbitMQ(config)
 	defer conn.Close()
 	defer ch.Close()
 
@@ -100,10 +100,10 @@ func startRabbitMQClient() {
 	<-forever
 }
 
-func startRabbitMQServer() {
+func startRabbitMQServer(config *pkg.ConfigAMQP) {
 	fmt.Printf("\nStart RabbitMQ server\n")
 
-	conn, q, ch := startRabbitMQ()
+	conn, q, ch := startRabbitMQ(config)
 	defer conn.Close()
 	defer ch.Close()
 

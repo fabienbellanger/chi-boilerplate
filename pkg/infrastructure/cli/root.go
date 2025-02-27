@@ -1,12 +1,11 @@
 package cli
 
 import (
+	"chi_boilerplate/pkg"
 	"chi_boilerplate/pkg/adapters/db"
-	"time"
 
 	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 const version = "0.0.1"
@@ -24,25 +23,24 @@ func Execute() error {
 }
 
 // initConfig initializes configuration from config file.
-func initConfig() error {
-	viper.SetConfigFile(".env")
-	return viper.ReadInConfig()
+func initConfig() (*pkg.Config, error) {
+	return pkg.NewConfig()
 }
 
 // initDatabase initializes database connection.
-func initDatabase() (*db.MySQL, error) {
+func initDatabase(config *pkg.Config) (*db.MySQL, error) {
 	return db.NewMySQL(&db.Config{
-		Host:            viper.GetString("DB_HOST"),
-		Username:        viper.GetString("DB_USERNAME"),
-		Password:        viper.GetString("DB_PASSWORD"),
-		Port:            viper.GetInt("DB_PORT"),
-		Database:        viper.GetString("DB_DATABASE"),
-		Charset:         viper.GetString("DB_CHARSET"),
-		Collation:       viper.GetString("DB_COLLATION"),
-		Location:        viper.GetString("DB_LOCATION"),
-		MaxIdleConns:    viper.GetInt("DB_MAX_IDLE_CONNS"),
-		MaxOpenConns:    viper.GetInt("DB_MAX_OPEN_CONNS"),
-		ConnMaxLifetime: viper.GetDuration("DB_CONN_MAX_LIFETIME") * time.Hour,
+		Host:            config.Database.Host,
+		Username:        config.Database.Username,
+		Password:        config.Database.Password,
+		Port:            config.Database.Port,
+		Database:        config.Database.Database,
+		Charset:         config.Database.Charset,
+		Collation:       config.Database.Collation,
+		Location:        config.Database.Location,
+		MaxIdleConns:    config.Database.MaxIdleConns,
+		MaxOpenConns:    config.Database.MaxOpenConns,
+		ConnMaxLifetime: config.Database.ConnMaxLifetime,
 	})
 }
 
