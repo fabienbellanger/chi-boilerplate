@@ -32,7 +32,7 @@ func (ve *ValidatorErrors) Error() string {
 
 // ValidateStruct checks if a struct is valid and returns an array of errors
 // if it is not valid.
-func ValidateStruct(task interface{}) (errors ValidatorErrors) {
+func ValidateStruct(task any) (errors ValidatorErrors) {
 	validate := validator.New()
 	err := validate.Struct(task)
 	if err != nil {

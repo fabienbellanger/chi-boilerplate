@@ -57,7 +57,7 @@ func executeRequest(req *http.Request, s *chi.Mux) *httptest.ResponseRecorder {
 }
 
 // JsonToString converts a JSON to a string.
-func JsonToString(d interface{}) string {
+func JsonToString(d any) string {
 	b, err := json.Marshal(d)
 	if err != nil {
 		log.Panicf("%v\n", err)

@@ -52,14 +52,14 @@ const (
 
 // HTTPError represents an HTTP error.
 type HTTPError struct {
-	Code    int         `json:"code"`
-	Message string      `json:"message"`
-	Details interface{} `json:"details,omitempty"`
-	Err     error       `json:"-"`
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Details any    `json:"details,omitempty"`
+	Err     error  `json:"-"`
 }
 
 // NewHTTPError returns a new HTTPError.
-func NewHTTPError(code int, message string, details interface{}, err error) *HTTPError {
+func NewHTTPError(code int, message string, details any, err error) *HTTPError {
 	return &HTTPError{
 		Code:    code,
 		Message: message,
@@ -91,32 +91,32 @@ func (e *HTTPError) SendError(w http.ResponseWriter) error {
 	return nil
 }
 
-func Err(w http.ResponseWriter, status int, err error, msg string, details interface{}) error {
+func Err(w http.ResponseWriter, status int, err error, msg string, details any) error {
 	e := NewHTTPError(status, msg, details, err)
 	return e.SendError(w)
 }
 
-func Err400(w http.ResponseWriter, err error, msg string, details interface{}) error {
+func Err400(w http.ResponseWriter, err error, msg string, details any) error {
 	return Err(w, StatusBadRequest, err, msg, details)
 }
 
-func Err401(w http.ResponseWriter, err error, msg string, details interface{}) error {
+func Err401(w http.ResponseWriter, err error, msg string, details any) error {
 	return Err(w, StatusUnauthorized, err, msg, nil)
 }
 
-func Err404(w http.ResponseWriter, err error, msg string, details interface{}) error {
+func Err404(w http.ResponseWriter, err error, msg string, details any) error {
 	return Err(w, StatusNotFound, err, msg, nil)
 }
 
-func Err405(w http.ResponseWriter, err error, msg string, details interface{}) error {
+func Err405(w http.ResponseWriter, err error, msg string, details any) error {
 	return Err(w, StatusMethodNotAllowed, err, msg, nil)
 }
 
-func Err500(w http.ResponseWriter, err error, msg string, details interface{}) error {
+func Err500(w http.ResponseWriter, err error, msg string, details any) error {
 	return Err(w, StatusInternalServerError, err, msg, details)
 }
 
-func JSON(w http.ResponseWriter, data interface{}) error {
+func JSON(w http.ResponseWriter, data any) error {
 	res, err := json.Marshal(data)
 	if err != nil {
 		return Err500(w, err, "error when encoding the response", nil)

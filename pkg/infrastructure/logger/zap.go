@@ -51,7 +51,7 @@ func NewZapLogger() (*ZapLogger, error) {
 }
 
 // FromFields converts fields to zap.Field.
-func (l *ZapLogger) FromFields(fields Fields) interface{} {
+func (l *ZapLogger) FromFields(fields Fields) any {
 	zapFields := make([]zap.Field, len(fields))
 	for i, f := range fields {
 		switch f.Type {

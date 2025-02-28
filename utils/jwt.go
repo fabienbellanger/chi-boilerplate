@@ -38,10 +38,10 @@ func LoadECDSAKeyFromFile(filename string, isPrivate bool) (any, error) {
 }
 
 // GetTokenAndKeyFromAlgo returns a token and a key from an algorithm and a secret
-func GetTokenAndKeyFromAlgo(algo, secret, keyPath string) (*jwt.Token, interface{}, error) {
+func GetTokenAndKeyFromAlgo(algo, secret, keyPath string) (*jwt.Token, any, error) {
 	// Create token
 	var token *jwt.Token
-	var key interface{}
+	var key any
 	var err error
 
 	if algo == "HS512" {
@@ -67,8 +67,8 @@ func GetTokenAndKeyFromAlgo(algo, secret, keyPath string) (*jwt.Token, interface
 }
 
 // GetKeyFromAlgo returns a key from an algorithm and a secret
-func GetKeyFromAlgo(algo, secret, keyPath string) (interface{}, error) {
-	var key interface{}
+func GetKeyFromAlgo(algo, secret, keyPath string) (any, error) {
+	var key any
 	var err error
 
 	if algo == jwt.SigningMethodHS512.Name {

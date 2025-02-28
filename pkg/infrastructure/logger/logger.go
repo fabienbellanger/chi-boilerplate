@@ -15,13 +15,13 @@ type Fields = []Field
 // Field is a struct that represents a log field.
 type Field struct {
 	Key   string
-	Value interface{}
+	Value any
 	Type  string
 }
 
 // NewField creates a new field.
 // Type must be one of the following: int, string, error.
-func NewField(k string, t string, v interface{}) Field {
+func NewField(k string, t string, v any) Field {
 	return Field{
 		Key:   k,
 		Type:  t,
@@ -31,7 +31,7 @@ func NewField(k string, t string, v interface{}) Field {
 
 // CustomLogger is the interface that a logger must implement.
 type CustomLogger interface {
-	FromFields(fields Fields) interface{}
+	FromFields(fields Fields) any
 	Debug(msg string, fields ...Fields)
 	Info(msg string, fields ...Fields)
 	Warn(msg string, fields ...Fields)
