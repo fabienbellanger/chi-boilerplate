@@ -35,7 +35,7 @@ func (s *ChiServer) initJWTToken() error {
 
 func (s *ChiServer) initMiddlewares(r *chi.Mux) {
 	r.Use(s.requestID) // Must be before the access logger
-	if viper.GetBool("ENABLE_ACCESS_LOG") {
+	if viper.GetBool("LOG_ACCESS_ENABLE") {
 		r.Use(s.initAccessLogger())
 	}
 	r.Use(middleware.Recoverer)

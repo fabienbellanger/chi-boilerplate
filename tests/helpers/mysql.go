@@ -84,7 +84,7 @@ func InitMySQL(p, m string) TestMysql {
 	viper.Set("JWT_ALGO", "HS512")
 	viper.Set("JWT_SECRET", "mySecretForTest")
 	viper.Set("SERVER_PPROF", false)
-	viper.Set("ENABLE_ACCESS_LOG", false)
+	viper.Set("LOG_ACCESS_ENABLE", false)
 
 	tdb, err := newTestMysql(m)
 	if err != nil {

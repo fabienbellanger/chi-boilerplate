@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/spf13/viper"
@@ -84,7 +85,7 @@ type ConfigJWT struct {
 	Algorithm string
 
 	// Lifetime (in hour)
-	Lifetime int
+	Lifetime time.Duration
 
 	// Secret key
 	SecretKey string
@@ -94,6 +95,34 @@ type ConfigJWT struct {
 
 	// Public key path
 	PublicKeyPath string
+}
+
+// NewConfigJWT creates a new ConfigJWT instance
+func NewConfigJWT() (*ConfigJWT, error) {
+	algo := viper.GetString("JWT_ALGO")
+	secret := viper.GetString("JWT_SECRET")
+	privateKeyPath := viper.GetString("JWT_PRIVATE_KEY_PATH")
+	publicKeyPath := viper.GetString("JWT_PUBLIC_KEY_PATH")
+
+	if algo != "HS512" && algo != "ES384" {
+		return nil, fmt.Errorf("invalid JWT algorithm")
+	}
+
+	if algo == "HS512" && secret == "" {
+		return nil, fmt.Errorf("missing JWT secret")
+	}
+
+	if algo == "ES384" && (privateKeyPath == "" || publicKeyPath == "") {
+		return nil, fmt.Errorf("missing JWT private or public key path")
+	}
+
+	return &ConfigJWT{
+		Algorithm:      algo,
+		Lifetime:       viper.GetDuration("JWT_LIFETIME") * time.Hour,
+		SecretKey:      secret,
+		PrivateKeyPath: privateKeyPath,
+		PublicKeyPath:  publicKeyPath,
+	}, nil
 }
 
 // ConfigCORS represents the configuration of the CORS
@@ -117,6 +146,18 @@ type ConfigCORS struct {
 	MaxAge int
 }
 
+// NewConfigCORS creates a new ConfigCORS instance
+func NewConfigCORS() *ConfigCORS {
+	return &ConfigCORS{
+		AllowedOrigins:   viper.GetStringSlice("CORS_ALLOWED_ORIGINS"),
+		AllowedMethods:   viper.GetStringSlice("CORS_ALLOWED_METHODS"),
+		AllowedHeaders:   viper.GetStringSlice("CORS_ALLOWED_HEADERS"),
+		ExposedHeaders:   viper.GetStringSlice("CORS_EXPOSED_HEADERS"),
+		AllowCredentials: viper.GetBool("CORS_ALLOW_CREDENTIALS"),
+		MaxAge:           viper.GetInt("CORS_MAX_AGE"),
+	}
+}
+
 // ConfigPprof represents the configuration of the pprof
 type ConfigPprof struct {
 	// Enable pprof
@@ -127,6 +168,15 @@ type ConfigPprof struct {
 
 	// Basic Auth password
 	BasicAuthPassword string
+}
+
+// NewConfigServer creates a new ConfigServer instance
+func NewConfigPprof() *ConfigPprof {
+	return &ConfigPprof{
+		Enable:            viper.GetBool("PPROF_ENABLE"),
+		BasicAuthUsername: viper.GetString("PPROF_BASICAUTH_USERNAME"),
+		BasicAuthPassword: viper.GetString("PPROF_BASICAUTH_PASSWORD"),
+	}
 }
 
 // ConfigAMQP represents the configuration of the RabbitMQ server
@@ -182,6 +232,11 @@ func NewConfig() (*Config, error) {
 		return nil, err
 	}
 
+	jwtConfig, err := NewConfigJWT()
+	if err != nil {
+		return nil, err
+	}
+
 	return &Config{
 		AppEnv:  viper.GetString("APP_ENV"),
 		AppName: viper.GetString("APP_NAME"),
@@ -210,28 +265,11 @@ func NewConfig() (*Config, error) {
 			Path:            viper.GetString("LOG_PATH"),
 			Outputs:         viper.GetStringSlice("LOG_OUTPUTS"),
 			Level:           viper.GetString("LOG_LEVEL"),
-			EnableAccessLog: viper.GetBool("LOG_ENABLE_ACCESS_LOG"),
+			EnableAccessLog: viper.GetBool("LOG_LOG_ACCESS_ENABLE"),
 		},
-		JWT: ConfigJWT{
-			Algorithm:      viper.GetString("JWT_ALGO"),
-			Lifetime:       viper.GetInt("JWT_LIFETIME"),
-			SecretKey:      viper.GetString("JWT_SECRET"),
-			PrivateKeyPath: viper.GetString("JWT_PRIVATE_KEY_PATH"),
-			PublicKeyPath:  viper.GetString("JWT_PUBLIC_KEY_PATH"),
-		},
-		CORS: ConfigCORS{
-			AllowedOrigins:   viper.GetStringSlice("CORS_ALLOWED_ORIGINS"),
-			AllowedMethods:   viper.GetStringSlice("CORS_ALLOWED_METHODS"),
-			AllowedHeaders:   viper.GetStringSlice("CORS_ALLOWED_HEADERS"),
-			ExposedHeaders:   viper.GetStringSlice("CORS_EXPOSED_HEADERS"),
-			AllowCredentials: viper.GetBool("CORS_ALLOW_CREDENTIALS"),
-			MaxAge:           viper.GetInt("CORS_MAX_AGE"),
-		},
-		Pprof: ConfigPprof{
-			Enable:            viper.GetBool("PPROF_ENABLE"),
-			BasicAuthUsername: viper.GetString("PPROF_BASICAUTH_USERNAME"),
-			BasicAuthPassword: viper.GetString("PPROF_BASICAUTH_PASSWORD"),
-		},
-		AMQP: *NewConfigAMQP(),
+		JWT:   *jwtConfig,
+		CORS:  *NewConfigCORS(),
+		Pprof: *NewConfigPprof(),
+		AMQP:  *NewConfigAMQP(),
 	}, nil
 }
