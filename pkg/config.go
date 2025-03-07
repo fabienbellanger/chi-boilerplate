@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/fabienbellanger/goutils"
 	"github.com/spf13/viper"
 )
 
@@ -23,6 +24,28 @@ type ConfigServer struct {
 
 	// Basic Auth password
 	BasicAuthPassword string
+}
+
+// NewConfigServer creates a new ConfigServer instance
+func NewConfigServer() (*ConfigServer, error) {
+	addr := viper.GetString("SERVER_ADDR")
+	port := viper.GetInt("SERVER_PORT")
+
+	if addr == "" {
+		return nil, fmt.Errorf("missing server address")
+	}
+
+	if port == 0 {
+		return nil, fmt.Errorf("missing server port")
+	}
+
+	return &ConfigServer{
+		Addr:              addr,
+		Port:              port,
+		Timeout:           viper.GetInt("SERVER_TIMEOUT"),
+		BasicAuthUsername: viper.GetString("SERVER_BASICAUTH_USERNAME"),
+		BasicAuthPassword: viper.GetString("SERVER_BASICAUTH_PASSWORD"),
+	}, nil
 }
 
 // ConfigDatabase represents the configuration of the database
@@ -64,6 +87,40 @@ type ConfigDatabase struct {
 	ConnMaxLifetime time.Duration
 }
 
+// NewConfigDatabase creates a new ConfigDatabase instance
+func NewConfigDatabase() (*ConfigDatabase, error) {
+	driver := viper.GetString("DB_DRIVER")
+	location := viper.GetString("DB_LOCATION")
+	database := viper.GetString("DB_DATABASE")
+
+	if driver != "mysql" {
+		return nil, fmt.Errorf("invalid database driver")
+	}
+
+	if location != "UTC" && location != "Local" {
+		return nil, fmt.Errorf("invalid database location")
+	}
+
+	if database == "" {
+		return nil, fmt.Errorf("missing database name")
+	}
+
+	return &ConfigDatabase{
+		Driver:          driver,
+		Host:            viper.GetString("DB_HOST"),
+		Username:        viper.GetString("DB_USERNAME"),
+		Password:        viper.GetString("DB_PASSWORD"),
+		Port:            viper.GetInt("DB_PORT"),
+		Database:        database,
+		Charset:         viper.GetString("DB_CHARSET"),
+		Collation:       viper.GetString("DB_COLLATION"),
+		Location:        location,
+		MaxIdleConns:    viper.GetInt("DB_MAX_IDLE_CONNS"),
+		MaxOpenConns:    viper.GetInt("DB_MAX_OPEN_CONNS"),
+		ConnMaxLifetime: viper.GetDuration("DB_CONN_MAX_LIFETIME") * time.Hour,
+	}, nil
+}
+
 // ConfigLog represents the configuration of the logs
 type ConfigLog struct {
 	// Path
@@ -72,11 +129,39 @@ type ConfigLog struct {
 	// Outputs (stdout | file)
 	Outputs []string
 
-	// Level (ebug | info | warn | error | fatal | panic)
+	// Level (debug | info | warn | error | fatal | panic)
 	Level string
 
 	// Enable access log
 	EnableAccessLog bool
+}
+
+// NewConfigLog creates a new ConfigLog instance
+func NewConfigLog() (*ConfigLog, error) {
+	level := viper.GetString("LOG_LEVEL")
+	outputs := viper.GetStringSlice("LOG_OUTPUTS")
+	path := viper.GetString("LOG_PATH")
+
+	if level != "debug" && level != "info" && level != "warn" && level != "error" && level != "fatal" && level != "panic" {
+		return nil, fmt.Errorf("invalid log level")
+	}
+
+	for _, output := range outputs {
+		if output != "stdout" && output != "file" {
+			return nil, fmt.Errorf("invalid log outputs")
+		}
+	}
+
+	if goutils.StringInSlice("file", outputs) && path == "" {
+		return nil, fmt.Errorf("missing log path")
+	}
+
+	return &ConfigLog{
+		Path:            path,
+		Outputs:         outputs,
+		Level:           level,
+		EnableAccessLog: viper.GetBool("LOG_ACCESS_ENABLE"),
+	}, nil
 }
 
 // ConfigJWT represents the configuration of the JWT
@@ -223,10 +308,9 @@ type Config struct {
 }
 
 // NewConfig creates a new Config instance
-// TODO: Add checks
-func NewConfig() (*Config, error) {
+func NewConfig(file string) (*Config, error) {
 	// Read .env file
-	viper.SetConfigFile(".env")
+	viper.SetConfigFile(file)
 	err := viper.ReadInConfig()
 	if err != nil {
 		return nil, err
@@ -237,39 +321,30 @@ func NewConfig() (*Config, error) {
 		return nil, err
 	}
 
+	logConfig, err := NewConfigLog()
+	if err != nil {
+		return nil, err
+	}
+
+	databaseConfig, err := NewConfigDatabase()
+	if err != nil {
+		return nil, err
+	}
+
+	serverConfig, err := NewConfigServer()
+	if err != nil {
+		return nil, err
+	}
+
 	return &Config{
-		AppEnv:  viper.GetString("APP_ENV"),
-		AppName: viper.GetString("APP_NAME"),
-		Server: ConfigServer{
-			Addr:              viper.GetString("SERVER_ADDR"),
-			Port:              viper.GetInt("SERVER_PORT"),
-			Timeout:           viper.GetInt("SERVER_TIMEOUT"),
-			BasicAuthUsername: viper.GetString("SERVER_BASICAUTH_USERNAME"),
-			BasicAuthPassword: viper.GetString("SERVER_BASICAUTH_PASSWORD"),
-		},
-		Database: ConfigDatabase{
-			Driver:          viper.GetString("DB_DRIVER"),
-			Host:            viper.GetString("DB_HOST"),
-			Username:        viper.GetString("DB_USERNAME"),
-			Password:        viper.GetString("DB_PASSWORD"),
-			Port:            viper.GetInt("DB_PORT"),
-			Database:        viper.GetString("DB_DATABASE"),
-			Charset:         viper.GetString("DB_CHARSET"),
-			Collation:       viper.GetString("DB_COLLATION"),
-			Location:        viper.GetString("DB_LOCATION"),
-			MaxIdleConns:    viper.GetInt("DB_MAX_IDLE_CONNS"),
-			MaxOpenConns:    viper.GetInt("DB_MAX_OPEN_CONNS"),
-			ConnMaxLifetime: viper.GetDuration("DB_CONN_MAX_LIFETIME") * time.Hour,
-		},
-		Log: ConfigLog{
-			Path:            viper.GetString("LOG_PATH"),
-			Outputs:         viper.GetStringSlice("LOG_OUTPUTS"),
-			Level:           viper.GetString("LOG_LEVEL"),
-			EnableAccessLog: viper.GetBool("LOG_LOG_ACCESS_ENABLE"),
-		},
-		JWT:   *jwtConfig,
-		CORS:  *NewConfigCORS(),
-		Pprof: *NewConfigPprof(),
-		AMQP:  *NewConfigAMQP(),
+		AppEnv:   viper.GetString("APP_ENV"),
+		AppName:  viper.GetString("APP_NAME"),
+		Server:   *serverConfig,
+		Database: *databaseConfig,
+		Log:      *logConfig,
+		JWT:      *jwtConfig,
+		CORS:     *NewConfigCORS(),
+		Pprof:    *NewConfigPprof(),
+		AMQP:     *NewConfigAMQP(),
 	}, nil
 }

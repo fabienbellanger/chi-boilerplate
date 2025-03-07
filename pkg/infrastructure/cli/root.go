@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const version = "0.0.1"
+const version = "0.1.0"
 
 var rootCmd = &cobra.Command{
 	Use:     "Chi Boilerplate",
@@ -24,7 +24,7 @@ func Execute() error {
 
 // initConfig initializes configuration from config file.
 func initConfig() (*pkg.Config, error) {
-	return pkg.NewConfig()
+	return pkg.NewConfig(".env")
 }
 
 // initDatabase initializes database connection.
