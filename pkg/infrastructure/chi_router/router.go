@@ -19,12 +19,12 @@ import (
 type ChiServer struct {
 	Addr   string
 	Port   string
-	DB     *db.MySQL
+	DB     *db.SqlxMySQL
 	Logger logger.CustomLogger
 }
 
 // NewChiServer creates a new ChiServer
-func NewChiServer(addr, port string, db *db.MySQL, l logger.CustomLogger) ChiServer {
+func NewChiServer(addr, port string, db *db.SqlxMySQL, l logger.CustomLogger) ChiServer {
 	return ChiServer{
 		Addr:   addr,
 		Port:   port,

@@ -16,7 +16,7 @@ type UserMysqlRepository struct {
 }
 
 // NewUserMysqlRepository creates a new UserMysqlRepository
-func NewUserMysqlRepository(db *db.MySQL) *UserMysqlRepository {
+func NewUserMysqlRepository(db *db.SqlxMySQL) *UserMysqlRepository {
 	return &UserMysqlRepository{db: db.DB}
 }
 

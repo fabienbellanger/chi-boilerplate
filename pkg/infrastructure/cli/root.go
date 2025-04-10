@@ -28,8 +28,8 @@ func initConfig() (*pkg.Config, error) {
 }
 
 // initDatabase initializes database connection.
-func initDatabase(config *pkg.Config) (*db.MySQL, error) {
-	return db.NewMySQL(&db.Config{
+func initDatabase(config *pkg.Config) (*db.SqlxMySQL, error) {
+	return db.NewSqlxMySQL(&db.Config{
 		Host:            config.Database.Host,
 		Username:        config.Database.Username,
 		Password:        config.Database.Password,

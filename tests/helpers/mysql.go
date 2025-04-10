@@ -30,7 +30,7 @@ import (
 // TestMysql is used to create and use a database for tests.
 type TestMysql struct {
 	name  string
-	DB    *db.MySQL
+	DB    *db.SqlxMySQL
 	Token string
 }
 
@@ -52,7 +52,7 @@ func newTestMysql(m string) (TestMysql, error) {
 		ConnMaxLifetime: viper.GetDuration("DB_CONN_MAX_LIFETIME") * time.Hour,
 	}
 
-	dbt, err := db.NewMySQL(&config)
+	dbt, err := db.NewSqlxMySQL(&config)
 	if err != nil {
 		return TestMysql{}, err
 	}
@@ -139,7 +139,7 @@ func (tdb *TestMysql) Drop() error {
 	return err
 }
 
-func runMySQLMigrations(m string, db *db.MySQL) error {
+func runMySQLMigrations(m string, db *db.SqlxMySQL) error {
 	newDSN, err := db.DSN()
 	if err != nil {
 		return err
@@ -160,7 +160,7 @@ func runMySQLMigrations(m string, db *db.MySQL) error {
 	return nil
 }
 
-func createMySQLUserAndAuthenticate(db *db.MySQL) (string, error) {
+func createMySQLUserAndAuthenticate(db *db.SqlxMySQL) (string, error) {
 	// Create first user
 	created_at, err := time.Parse(time.RFC3339, UserCreatedAt)
 	if err != nil {
