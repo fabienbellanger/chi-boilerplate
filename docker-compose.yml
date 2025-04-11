@@ -5,7 +5,7 @@ services:
     build: .
     ports: 
       - 3002:3002
-    restart: on-failure
+    restart: no # on-failure
     networks:
       - backend
 
